@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./components/home";
 import SettingsView from "./components/settings/SettingsView";
@@ -11,6 +11,14 @@ import SuccessSignup from "./components/auth/SuccessSignup";
 import HabitView from "./components/habits/HabitView";
 import BadgeView from "./components/badges/BadgeView";
 import { Toaster } from "@/components/ui/toaster";
+import { AdminLayout } from "./components/admin/AdminLayout";
+import { ScriptsManager } from "./components/admin/ScriptsManager";
+import { BlogManager } from "./components/admin/BlogManager";
+import { BlogList } from "./components/blog/BlogList";
+import { BlogPost } from "./components/blog/BlogPost";
+import { BlogLayout } from "./components/blog/BlogLayout";
+import LandingPage from "./components/landing/LandingPage";
+import { supabase } from "./lib/supabase";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -27,13 +35,35 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  const [scripts, setScripts] = useState({ header: "", footer: "" });
+
+  useEffect(() => {
+    const loadScripts = async () => {
+      const { data } = await supabase.from("scripts").select("*");
+      if (data) {
+        const header = data.find((s) => s.type === "header");
+        const footer = data.find((s) => s.type === "footer");
+        setScripts({
+          header: header?.content || "",
+          footer: footer?.content || "",
+        });
+      }
+    };
+
+    loadScripts();
+  }, []);
+
   document.title =
     window.location.hostname === "quanlythoigian.com"
       ? "Quản Lý Thời Gian"
       : "ConquerDay - Time Management App";
   console.log("Current hostname:", window.location.hostname); // Debug log
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {scripts.header && (
+        <div dangerouslySetInnerHTML={{ __html: scripts.header }} />
+      )}
       <LanguageProvider>
         <AuthProvider>
           <Suspense
@@ -62,7 +92,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              <Route path="/" element={<Navigate to="/auth" replace />} />
+              <Route path="/" element={<LandingPage />} />
               <Route
                 path="/home"
                 element={
@@ -96,6 +126,56 @@ function App() {
                 }
               />
 
+              {/* Admin routes */}
+              <Route
+                path="/admin"
+                element={
+                  <PrivateRoute>
+                    <AdminLayout>
+                      <Navigate to="/admin/blog" replace />
+                    </AdminLayout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/admin/scripts"
+                element={
+                  <PrivateRoute>
+                    <AdminLayout>
+                      <ScriptsManager />
+                    </AdminLayout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/admin/blog"
+                element={
+                  <PrivateRoute>
+                    <AdminLayout>
+                      <BlogManager />
+                    </AdminLayout>
+                  </PrivateRoute>
+                }
+              />
+
+              {/* Blog routes */}
+              {/* Blog routes - accessible to both logged-in and non-logged-in users */}
+              <Route
+                path="/blog/*"
+                element={
+                  <BlogLayout>
+                    <Routes>
+                      <Route path="/" element={<BlogList />} />
+                      <Route path="/:slug" element={<BlogPost />} />
+                      <Route
+                        path="/category/:category"
+                        element={<BlogList />}
+                      />
+                    </Routes>
+                  </BlogLayout>
+                }
+              />
+
               {/* Catch-all route */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
@@ -103,6 +183,9 @@ function App() {
           <Toaster />
         </AuthProvider>
       </LanguageProvider>
+      {scripts.footer && (
+        <div dangerouslySetInnerHTML={{ __html: scripts.footer }} />
+      )}
     </div>
   );
 }

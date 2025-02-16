@@ -1,66 +1,66 @@
-import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
-import { useNavigate, useLocation } from "react-router-dom";
-import { LogOut, CheckSquare, Award, Dumbbell, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function Header() {
-  const { signOut } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/auth");
-  };
-
-  const isActive = (path: string) => location.pathname === path;
+  const { user, signOut } = useAuth();
 
   return (
-    <header className="border-b">
-      <div className="flex h-16 items-center px-4 max-w-4xl mx-auto">
-        <nav className="flex items-center space-x-4 lg:space-x-6 mx-6">
-          <Button
-            variant={isActive("/home") ? "default" : "ghost"}
-            className="text-sm font-medium transition-colors hover:text-primary flex items-center gap-2"
-            onClick={() => navigate("/home")}
-          >
-            <CheckSquare className="h-4 w-4" />
-            Home
-          </Button>
-          <Button
-            variant={isActive("/habits") ? "default" : "ghost"}
-            className="text-sm font-medium transition-colors hover:text-primary flex items-center gap-2"
-            onClick={() => navigate("/habits")}
-          >
-            <Dumbbell className="h-4 w-4" />
-            Habits
-          </Button>
-          <Button
-            variant={isActive("/badges") ? "default" : "ghost"}
-            className="text-sm font-medium transition-colors hover:text-primary flex items-center gap-2"
-            onClick={() => navigate("/badges")}
-          >
-            <Award className="h-4 w-4" />
-            Badges
-          </Button>
-          <Button
-            variant={isActive("/settings") ? "default" : "ghost"}
-            className="text-sm font-medium transition-colors hover:text-primary flex items-center gap-2"
-            onClick={() => navigate("/settings")}
-          >
-            <Settings className="h-4 w-4" />
-            Settings
-          </Button>
-        </nav>
-        <div className="ml-auto flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleSignOut}
-            title="Sign out"
-          >
-            <LogOut className="h-5 w-5" />
-          </Button>
+    <header className="bg-white border-b">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex h-14 items-center justify-between">
+          <div className="flex items-center gap-12">
+            <Link to="/home" className="text-lg font-semibold">
+              ConquerDay
+            </Link>
+            <nav className="flex items-center gap-8">
+              <Link
+                to="/home"
+                className="text-sm text-gray-600 hover:text-gray-900"
+              >
+                Tasks
+              </Link>
+              <Link
+                to="/habits"
+                className="text-sm text-gray-600 hover:text-gray-900"
+              >
+                Habits
+              </Link>
+              <Link
+                to="/badges"
+                className="text-sm text-gray-600 hover:text-gray-900"
+              >
+                Badges
+              </Link>
+              <Link
+                to="/blog"
+                className="text-sm text-gray-600 hover:text-gray-900"
+              >
+                Blog
+              </Link>
+            </nav>
+          </div>
+          <div className="flex items-center gap-8">
+            <Link
+              to="/settings"
+              className="text-sm text-gray-600 hover:text-gray-900"
+            >
+              Settings
+            </Link>
+            <Link
+              to="/profile"
+              className="text-sm text-gray-600 hover:text-gray-900"
+            >
+              Profile
+            </Link>
+            <Button
+              variant="outline"
+              onClick={() => signOut()}
+              className="text-sm"
+            >
+              Sign Out
+            </Button>
+          </div>
         </div>
       </div>
     </header>

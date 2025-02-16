@@ -6,6 +6,10 @@
     {
       "path": "/api/notifications",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/publish-scheduled",
+      "schedule": "* * * * *"
     }
   ]
 }

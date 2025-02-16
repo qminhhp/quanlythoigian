@@ -116,7 +116,7 @@ export default function BadgeView() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="max-w-4xl mx-auto p-6 space-y-8">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
         {/* Level Progress */}
         <Card className="p-6 bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
           <div className="flex items-center justify-between mb-4">

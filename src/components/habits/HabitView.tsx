@@ -251,16 +251,14 @@ export default function HabitView() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="max-w-4xl mx-auto p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <Button
-              variant="outline"
-              onClick={() => setShowArchived(!showArchived)}
-            >
-              {showArchived ? "Show Active" : "Show Archived"}
-            </Button>
-          </div>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex justify-between items-center mb-6">
+          <Button
+            variant="outline"
+            onClick={() => setShowArchived(!showArchived)}
+          >
+            {showArchived ? "Show Active" : "Show Archived"}
+          </Button>
           <Button onClick={() => setIsDialogOpen(true)}>
             <PlusCircle className="h-4 w-4 mr-2" />
             New Habit
