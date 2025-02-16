@@ -120,9 +120,9 @@ export function TaskDialog({
             <div className="space-y-2">
               <label className="text-sm font-medium">Repeat</label>
               <Select
-                onValueChange={(value: RepeatFrequency) =>
-                  setValue("repeat_frequency", value)
-                }
+                onValueChange={(
+                  value: "none" | "daily" | "weekly" | "monthly",
+                ) => setValue("repeat_frequency", value)}
                 defaultValue={task?.repeat_frequency || "none"}
               >
                 <SelectTrigger>

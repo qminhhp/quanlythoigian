@@ -34,5 +34,3 @@ export interface UserProgress {
   experience: number;
   badges: string[];
 }
-
-export type { UserProgress };
