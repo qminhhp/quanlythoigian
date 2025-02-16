@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useForm } from "react-hook-form";
 import { DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
@@ -36,6 +37,7 @@ export function TaskDialog({
   onSubmit,
   task,
 }: TaskDialogProps) {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [categories, setCategories] = useState<{ id: string; name: string }[]>(
     [],
@@ -95,18 +97,22 @@ export function TaskDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{task ? "Edit Task" : "Add New Task"}</DialogTitle>
+          <DialogTitle>
+            {task ? t("tasks", "edit") : t("tasks", "newTask")}
+          </DialogTitle>
           <DialogDescription>
             Enter the details for your task below.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Title</label>
+            <label className="text-sm font-medium">{t("tasks", "title")}</label>
             <Input {...register("title")} placeholder="Enter task title" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Description</label>
+            <label className="text-sm font-medium">
+              {t("tasks", "description")}
+            </label>
             <Textarea
               {...register("description")}
               placeholder="Enter detailed description (optional)"
@@ -114,7 +120,9 @@ export function TaskDialog({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Due Date</label>
+              <label className="text-sm font-medium">
+                {t("tasks", "dueDate")}
+              </label>
               <Input type="datetime-local" {...register("due_date")} />
             </div>
             <div className="space-y-2">
@@ -145,7 +153,9 @@ export function TaskDialog({
                 {...register("is_urgent")}
                 className="h-4 w-4 rounded border-gray-300"
               />
-              <label className="text-sm font-medium">Urgent</label>
+              <label className="text-sm font-medium">
+                {t("tasks", "urgent")}
+              </label>
             </div>
             <div className="flex items-center space-x-2">
               <input
@@ -153,12 +163,16 @@ export function TaskDialog({
                 {...register("is_important")}
                 className="h-4 w-4 rounded border-gray-300"
               />
-              <label className="text-sm font-medium">Important</label>
+              <label className="text-sm font-medium">
+                {t("tasks", "important")}
+              </label>
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Category</label>
+            <label className="text-sm font-medium">
+              {t("tasks", "category")}
+            </label>
             <Select
               onValueChange={(value) => setValue("category", value)}
               defaultValue={task?.category || ""}

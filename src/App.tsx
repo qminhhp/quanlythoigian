@@ -31,6 +31,7 @@ function App() {
     window.location.hostname === "quanlythoigian.com"
       ? "Quản Lý Thời Gian"
       : "ConquerDay - Time Management App";
+  console.log("Current hostname:", window.location.hostname); // Debug log
   return (
     <div className="min-h-screen bg-gray-50">
       <LanguageProvider>

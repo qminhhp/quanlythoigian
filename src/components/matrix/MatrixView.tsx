@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Task } from "@/types/task";
 import { TaskCard } from "@/components/tasks/TaskCard";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 interface MatrixViewProps {
   tasks: Task[];
@@ -15,6 +16,7 @@ export default function MatrixView({
   onEditTask,
   onDeleteTask,
 }: MatrixViewProps) {
+  const { t } = useLanguage();
   const getTasksByQuadrant = (isUrgent: boolean, isImportant: boolean) => {
     return tasks.filter(
       (task) =>
@@ -46,7 +48,7 @@ export default function MatrixView({
         <div className="p-4 min-h-[300px]">
           {quadrantTasks.length === 0 ? (
             <div className="flex items-center justify-center h-full text-gray-500 text-sm">
-              No tasks yet
+              {t("tasks", "noTasks")}
             </div>
           ) : (
             <div className="space-y-2">
@@ -82,7 +84,9 @@ export default function MatrixView({
 
       <Card className="rounded-2xl border-0 shadow-sm overflow-hidden">
         <div className="flex justify-between items-center p-4 border-b">
-          <h3 className="font-medium text-gray-900">Completed Tasks</h3>
+          <h3 className="font-medium text-gray-900">
+            {t("tasks", "completed")}
+          </h3>
           <span className="text-sm text-gray-500">
             {completedTasks.length} completed tasks
           </span>
@@ -90,7 +94,7 @@ export default function MatrixView({
         <div className="p-4">
           {completedTasks.length === 0 ? (
             <div className="text-center text-gray-500 py-8">
-              No completed tasks yet
+              {t("tasks", "noTasks")}
             </div>
           ) : (
             <div className="space-y-2">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { Task, UserProgress } from "@/types/task";
@@ -11,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { sendTelegramMessage } from "@/lib/telegram";
 
 function TaskManager() {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -300,13 +302,15 @@ function TaskManager() {
           className="w-[400px]"
         >
           <TabsList>
-            <TabsTrigger value="matrix">Matrix</TabsTrigger>
-            <TabsTrigger value="category">Categories</TabsTrigger>
+            <TabsTrigger value="matrix">{t("tasks", "matrix")}</TabsTrigger>
+            <TabsTrigger value="category">
+              {t("tasks", "categories")}
+            </TabsTrigger>
           </TabsList>
         </Tabs>
         <Button onClick={() => setIsDialogOpen(true)}>
           <PlusCircle className="h-4 w-4 mr-2" />
-          New Task
+          {t("tasks", "newTask")}
         </Button>
       </div>
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { Task } from "@/types/task";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +29,7 @@ export function TaskCard({
   onEdit,
   onDelete,
 }: TaskCardProps) {
+  const { t } = useLanguage();
   const [isViewOpen, setIsViewOpen] = useState(false);
 
   return (
@@ -48,7 +50,7 @@ export function TaskCard({
               onClick={() => onComplete(task.id)}
             >
               <Undo2 className="h-3 w-3 mr-1" />
-              Undo
+              {t("tasks", "undo")}
             </Button>
           )}
         </div>
@@ -78,18 +80,18 @@ export function TaskCard({
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => setIsViewOpen(true)}>
             <Eye className="h-4 w-4 mr-2" />
-            View Details
+            {t("tasks", "viewDetails")}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onEdit(task)}>
             <Edit className="h-4 w-4 mr-2" />
-            Edit
+            {t("tasks", "edit")}
           </DropdownMenuItem>
           <DropdownMenuItem
             className="text-red-600"
             onClick={() => onDelete(task.id)}
           >
             <Trash2 className="h-4 w-4 mr-2" />
-            Delete
+            {t("tasks", "delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -101,7 +103,9 @@ export function TaskCard({
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <h4 className="text-sm font-medium mb-1">Description</h4>
+              <h4 className="text-sm font-medium mb-1">
+                {t("tasks", "description")}
+              </h4>
               <p className="text-gray-600 whitespace-pre-wrap">
                 {task.description?.split("\n").map((line, i) => (
                   <div key={i}>
@@ -127,14 +131,18 @@ export function TaskCard({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <h4 className="text-sm font-medium mb-1">Created</h4>
+                <h4 className="text-sm font-medium mb-1">
+                  {t("tasks", "created")}
+                </h4>
                 <p className="text-gray-600">
                   {new Date(task.created_at).toLocaleDateString()}
                 </p>
               </div>
               {task.due_date && (
                 <div>
-                  <h4 className="text-sm font-medium mb-1">Due Date</h4>
+                  <h4 className="text-sm font-medium mb-1">
+                    {t("tasks", "dueDate")}
+                  </h4>
                   <p className="text-gray-600">
                     {new Date(task.due_date).toLocaleDateString()}
                   </p>
@@ -142,7 +150,9 @@ export function TaskCard({
               )}
               {task.category && (
                 <div>
-                  <h4 className="text-sm font-medium mb-1">Category</h4>
+                  <h4 className="text-sm font-medium mb-1">
+                    {t("tasks", "category")}
+                  </h4>
                   <p className="text-gray-600">{task.category}</p>
                 </div>
               )}
