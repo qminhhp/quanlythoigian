@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,7 @@ export function AuthForm() {
   console.log("AuthForm rendering");
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (user) {
@@ -115,16 +117,16 @@ export function AuthForm() {
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900">
             {isResetPassword
-              ? "Reset Password"
+              ? t("auth", "resetPassword")
               : isSignUp
-                ? "Create Account"
-                : "Sign In"}
+                ? t("auth", "createAccount")
+                : t("auth", "signIn")}
           </h2>
           {!isResetPassword && (
             <p className="mt-2 text-sm text-gray-600">
               {isSignUp
-                ? "Create your account to get started"
-                : "Welcome back! Please sign in to continue"}
+                ? t("auth", "createToGetStarted")
+                : t("auth", "welcomeBack")}
             </p>
           )}
         </div>
@@ -134,7 +136,7 @@ export function AuthForm() {
             <Input
               {...register("email")}
               type="email"
-              placeholder="Email"
+              placeholder={t("auth", "email")}
               className="w-full px-4 py-2"
               required
             />
@@ -143,7 +145,7 @@ export function AuthForm() {
               <Input
                 {...register("password")}
                 type="password"
-                placeholder="Password"
+                placeholder={t("auth", "password")}
                 className="w-full px-4 py-2"
                 required
               />
@@ -153,13 +155,13 @@ export function AuthForm() {
               <>
                 <Input
                   {...register("username")}
-                  placeholder="Username"
+                  placeholder={t("auth", "username")}
                   className="w-full px-4 py-2"
                   required
                 />
                 <Input
                   {...register("displayName")}
-                  placeholder="Display Name"
+                  placeholder={t("auth", "displayName")}
                   className="w-full px-4 py-2"
                   required
                 />
@@ -205,7 +207,7 @@ export function AuthForm() {
                   defaultValue={watch("timezone")}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select timezone" />
+                    <SelectValue placeholder={t("auth", "timezone")} />
                   </SelectTrigger>
                   <SelectContent>
                     {TIMEZONES.map((timezone) => (
@@ -227,10 +229,10 @@ export function AuthForm() {
             disabled={isSubmitting}
           >
             {isResetPassword
-              ? "Send Reset Link"
+              ? t("auth", "sendResetLink")
               : isSignUp
-                ? "Sign Up"
-                : "Sign In"}
+                ? t("auth", "signUp")
+                : t("auth", "signIn")}
           </Button>
         </form>
 
@@ -241,7 +243,7 @@ export function AuthForm() {
               onClick={() => setIsResetPassword(true)}
               className="text-sm text-primary hover:underline w-full text-center"
             >
-              Forgot your password?
+              {t("auth", "forgotPassword")}
             </button>
           )}
 
@@ -252,19 +254,19 @@ export function AuthForm() {
                 onClick={() => setIsResetPassword(false)}
                 className="text-primary hover:underline"
               >
-                Back to sign in
+                {t("auth", "backToSignIn")}
               </button>
             ) : (
               <>
                 {isSignUp
-                  ? "Already have an account?"
-                  : "Don't have an account?"}{" "}
+                  ? t("auth", "alreadyHaveAccount")
+                  : t("auth", "dontHaveAccount")}{" "}
                 <button
                   type="button"
                   onClick={() => setIsSignUp(!isSignUp)}
                   className="text-primary hover:underline"
                 >
-                  {isSignUp ? "Sign In" : "Sign Up"}
+                  {isSignUp ? t("auth", "signIn") : t("auth", "signUp")}
                 </button>
               </>
             )}
