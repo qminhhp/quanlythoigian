@@ -27,7 +27,10 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  console.log("App component rendering");
+  document.title =
+    window.location.hostname === "quanlythoigian.com"
+      ? "Quản Lý Thời Gian"
+      : "ConquerDay - Time Management App";
   return (
     <div className="min-h-screen bg-gray-50">
       <LanguageProvider>
