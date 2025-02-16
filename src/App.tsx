@@ -36,7 +36,7 @@ function App() {
         <Routes>
           {/* Tempo routes */}
           {import.meta.env.VITE_TEMPO === "true" && (
-            <Route path="/tempobook/*" />
+            <Route path="/tempobook/*" element={<div />} />
           )}
 
           {/* Auth routes */}
