@@ -30,11 +30,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { hour } = req.body;
-    console.log(`Processing notifications for hour: ${hour}`);
+    // Get current UTC hour
+    const currentHour = new Date().getUTCHours();
+    console.log(`Processing notifications for UTC hour: ${currentHour}`);
 
-    // Send habit reminders at 6 AM
-    if (hour === 6) {
+    // Get all users with their timezones
+    const { data: userSettings } = await supabase
+      .from("telegram_settings")
+      .select("user_id, telegram_chat_id, notify_habits, notify_tasks")
+      .not("telegram_chat_id", "is", null);
+
+    if (!userSettings) return res.status(200).json({ success: true });
+
+    // Get user profiles with timezones
+    const { data: userProfiles } = await supabase
+      .from("profiles")
+      .select("id, timezone")
+      .in(
+        "id",
+        userSettings.map((s) => s.user_id)
+      );
+
+    if (!userProfiles) return res.status(200).json({ success: true });
+
+    // Create a map of user_id to timezone
+    const userTimezones = Object.fromEntries(
+      userProfiles.map((p) => [p.id, p.timezone || "Etc/GMT+0"])
+    );
+
+    // Process each user according to their local time
+    for (const settings of userSettings) {
+      const userTimezone = userTimezones[settings.user_id] || "Etc/GMT+0";
+      const userDate = new Date(new Date().toLocaleString("en-US", { timeZone: userTimezone }));
+      const userHour = userDate.getHours();
+
+      // Send habit reminders at 6 AM user's time
+      if (userHour === 6 && settings.notify_habits) {
       console.log("Sending habit reminders...");
       const { data: habitSettings } = await supabase
         .from("telegram_settings")
