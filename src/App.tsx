@@ -54,7 +54,7 @@ function App() {
                 </PrivateRoute>
               }
             />
-            <Route path="/" element={<AuthForm />} />
+            <Route path="/" element={<Navigate to="/auth" replace />} />
             <Route
               path="/home"
               element={

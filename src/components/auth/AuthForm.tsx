@@ -56,7 +56,7 @@ export function AuthForm() {
 
   useEffect(() => {
     if (user) {
-      navigate("/");
+      navigate("/home");
     }
   }, [user, navigate]);
   const [isSignUp, setIsSignUp] = useState(false);
@@ -75,6 +75,10 @@ export function AuthForm() {
 
   const onSubmit = async (data: AuthFormData) => {
     try {
+      console.log(
+        "Attempting auth action:",
+        isSignUp ? "signup" : isResetPassword ? "reset" : "signin",
+      );
       setError("");
       if (isResetPassword) {
         const { error } = await supabase.auth.resetPasswordForEmail(
@@ -91,13 +95,16 @@ export function AuthForm() {
 
       if (isSignUp) {
         const { email, password, ...metadata } = data;
+        console.log("Signing up with:", { email, metadata });
         await signUp(email, password, metadata);
         navigate("/auth/success");
         return;
       } else {
+        console.log("Signing in with:", data.email);
         await signIn(data.email, data.password);
       }
     } catch (err) {
+      console.error("Auth error:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
     }
   };
@@ -157,23 +164,41 @@ export function AuthForm() {
                   required
                 />
                 <div className="space-y-2">
-                  <Controller
-                    name="phone"
-                    control={control}
-                    rules={{ required: true }}
-                    render={({ field: { ref, ...field } }) => (
-                      <PhoneInput
-                        {...field}
-                        country="us"
-                        enableSearch
-                        inputClass="!w-full !h-10 !text-base !px-4 !py-2 !border-input !bg-background"
-                        buttonClass="!border-input !bg-background"
-                        containerClass="!w-full"
-                        searchClass="!w-full"
-                        dropdownClass="!bg-background !border-input"
-                      />
-                    )}
-                  />
+                  <div className="space-y-1">
+                    <Controller
+                      name="phone"
+                      control={control}
+                      rules={{
+                        required: "Phone number is required",
+                        minLength: {
+                          value: 10,
+                          message: "Phone number is too short",
+                        },
+                      }}
+                      render={({
+                        field: { ref, ...field },
+                        fieldState: { error },
+                      }) => (
+                        <>
+                          <PhoneInput
+                            {...field}
+                            country="vn"
+                            enableSearch
+                            inputClass={`!w-full !h-10 !text-base !px-4 !py-2 !border-input !bg-background ${error ? "!border-red-500" : ""}`}
+                            buttonClass="!border-input !bg-background"
+                            containerClass="!w-full"
+                            searchClass="!w-full"
+                            dropdownClass="!bg-background !border-input"
+                          />
+                          {error && (
+                            <p className="text-sm text-red-500">
+                              {error.message}
+                            </p>
+                          )}
+                        </>
+                      )}
+                    />
+                  </div>
                 </div>
                 <Select
                   onValueChange={(value) => setValue("timezone", value)}
