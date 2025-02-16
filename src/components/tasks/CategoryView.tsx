@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Trash2 } from "lucide-react";
 import { TaskCard } from "./TaskCard";
 import { Task } from "@/types/task";
 
@@ -33,11 +33,83 @@ export default function CategoryView({
   }, [user]);
 
   const fetchCategories = async () => {
-    const { data } = await supabase
+    if (!user) return;
+
+    // First check if we have any categories
+    const { data, error } = await supabase
       .from("categories")
       .select("id, name")
-      .eq("user_id", user?.id);
-    setCategories(data || []);
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Error fetching categories:", error);
+      return;
+    }
+
+    // If no categories exist yet, create some default ones
+    if (!data || data.length === 0) {
+      const defaultCategories = [
+        "Work",
+        "Personal",
+        "Shopping",
+        "Health",
+        "Home",
+      ];
+
+      const { error: insertError } = await supabase.from("categories").insert(
+        defaultCategories.map((name) => ({
+          user_id: user.id,
+          name,
+        })),
+      );
+
+      if (insertError) {
+        console.error("Error creating default categories:", insertError);
+        return;
+      }
+
+      // Fetch again after creating defaults
+      const { data: newData } = await supabase
+        .from("categories")
+        .select("id, name")
+        .eq("user_id", user.id);
+
+      setCategories(newData || []);
+    } else {
+      setCategories(data);
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    if (!user) return;
+
+    // First update all tasks in this category to be uncategorized
+    const category = categories.find((c) => c.id === categoryId);
+    if (!category) return;
+
+    const { error: taskUpdateError } = await supabase
+      .from("tasks")
+      .update({ category: "uncategorized" })
+      .eq("user_id", user.id)
+      .eq("category", category.name);
+
+    if (taskUpdateError) {
+      console.error("Error updating tasks:", taskUpdateError);
+      return;
+    }
+
+    // Then delete the category
+    const { error } = await supabase
+      .from("categories")
+      .delete()
+      .eq("id", categoryId);
+
+    if (error) {
+      console.error("Error deleting category:", error);
+      return;
+    }
+
+    fetchCategories();
   };
 
   const handleAddCategory = async () => {
@@ -92,9 +164,19 @@ export default function CategoryView({
             >
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium">{category.name}</h3>
-                <span className="text-sm text-gray-500">
-                  {categoryTasks.length} tasks
-                </span>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-gray-500">
+                    {categoryTasks.length} tasks
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-600"
+                    onClick={() => handleDeleteCategory(category.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2">
                 {categoryTasks.map((task) => (

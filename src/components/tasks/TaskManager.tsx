@@ -8,12 +8,14 @@ import { TaskDialog } from "./TaskDialog";
 import MatrixView from "../matrix/MatrixView";
 import CategoryView from "./CategoryView";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { sendTelegramMessage } from "@/lib/telegram";
 
 function TaskManager() {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>();
+  const [activeView, setActiveView] = useState("matrix");
   const [userProgress, setUserProgress] = useState<UserProgress>({
     level: 1,
     experience: 0,
@@ -159,6 +161,18 @@ function TaskManager() {
           user_id: user.id,
           badge_id: badge.id,
         });
+
+        // Send telegram notification for badge
+        const { data: telegramSettings } = await supabase
+          .from("telegram_settings")
+          .select("telegram_chat_id")
+          .eq("user_id", user.id)
+          .single();
+
+        if (telegramSettings?.telegram_chat_id) {
+          const message = `🏆 Congratulations! You've earned the "${badge.name}" badge!\n\n${badge.description}`;
+          await sendTelegramMessage(telegramSettings.telegram_chat_id, message);
+        }
       }
     }
   };
@@ -248,6 +262,21 @@ function TaskManager() {
 
       if (updateError) throw updateError;
 
+      // Check if leveled up
+      if (newLevel > levelData.level) {
+        // Send telegram notification for level up
+        const { data: telegramSettings } = await supabase
+          .from("telegram_settings")
+          .select("telegram_chat_id")
+          .eq("user_id", user.id)
+          .single();
+
+        if (telegramSettings?.telegram_chat_id) {
+          const message = `🎉 Level Up! You've reached level ${newLevel}!\n\nKeep up the great work! 💪`;
+          await sendTelegramMessage(telegramSettings.telegram_chat_id, message);
+        }
+      }
+
       setUserProgress((prev) => ({
         ...prev,
         level: newLevel,
@@ -265,7 +294,11 @@ function TaskManager() {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <Tabs defaultValue="matrix" className="w-[400px]">
+        <Tabs
+          value={activeView}
+          onValueChange={setActiveView}
+          className="w-[400px]"
+        >
           <TabsList>
             <TabsTrigger value="matrix">Matrix</TabsTrigger>
             <TabsTrigger value="category">Categories</TabsTrigger>
@@ -277,7 +310,7 @@ function TaskManager() {
         </Button>
       </div>
 
-      <Tabs defaultValue="matrix">
+      <Tabs value={activeView} onValueChange={setActiveView}>
         <TabsContent value="matrix">
           <MatrixView
             tasks={tasks}

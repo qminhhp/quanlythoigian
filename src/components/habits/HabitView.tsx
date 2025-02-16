@@ -7,6 +7,7 @@ import { PlusCircle } from "lucide-react";
 import { HabitCard } from "./HabitCard";
 import { HabitDialog } from "./HabitDialog";
 import { Habit } from "@/types/task";
+import { sendTelegramMessage } from "@/lib/telegram";
 
 export default function HabitView() {
   const { user } = useAuth();
@@ -76,7 +77,7 @@ export default function HabitView() {
     const newExperience = levelData.experience + amount;
     const newLevel = Math.floor(newExperience / 100) + 1;
 
-    await supabase
+    const { error } = await supabase
       .from("user_levels")
       .update({
         experience: newExperience,
@@ -84,6 +85,26 @@ export default function HabitView() {
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Error updating experience:", error);
+      return;
+    }
+
+    // Check if leveled up
+    if (newLevel > levelData.level) {
+      // Send telegram notification for level up
+      const { data: telegramSettings } = await supabase
+        .from("telegram_settings")
+        .select("telegram_chat_id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (telegramSettings?.telegram_chat_id) {
+        const message = `🎉 Level Up! You've reached level ${newLevel}!\n\nKeep up the great work! 💪`;
+        await sendTelegramMessage(telegramSettings.telegram_chat_id, message);
+      }
+    }
   };
 
   const checkForBadges = async (streak: number) => {
@@ -114,6 +135,18 @@ export default function HabitView() {
           user_id: user.id,
           badge_id: badge.id,
         });
+
+        // Send telegram notification for badge
+        const { data: telegramSettings } = await supabase
+          .from("telegram_settings")
+          .select("telegram_chat_id")
+          .eq("user_id", user.id)
+          .single();
+
+        if (telegramSettings?.telegram_chat_id) {
+          const message = `🏆 Congratulations! You've earned the "${badge.name}" badge!\n\n${badge.description}`;
+          await sendTelegramMessage(telegramSettings.telegram_chat_id, message);
+        }
       }
     }
   };
