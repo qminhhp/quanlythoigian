@@ -17,6 +17,7 @@ export default function MatrixView({
   onDeleteTask,
 }: MatrixViewProps) {
   const { t } = useLanguage();
+
   const getTasksByQuadrant = (isUrgent: boolean, isImportant: boolean) => {
     return tasks.filter(
       (task) =>
@@ -36,16 +37,17 @@ export default function MatrixView({
   ) => {
     const quadrantTasks = getTasksByQuadrant(isUrgent, isImportant);
     return (
-      <Card
-        className={`${bgColor} rounded-2xl overflow-hidden border-0 shadow-sm`}
-      >
-        <div className="flex justify-between items-center p-4 border-b border-black/5">
-          <h3 className="font-medium text-gray-900">{title}</h3>
-          <span className="text-sm text-gray-500">
-            {quadrantTasks.length} tasks
-          </span>
+      <Card className={`${bgColor} rounded-lg overflow-hidden border-0`}>
+        <div className="flex justify-between items-center p-3 border-b border-black/5">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-medium text-gray-900">{title}</h3>
+            <span className="text-xs text-gray-500">
+              {quadrantTasks.length}{" "}
+              {quadrantTasks.length === 1 ? "task" : "tasks"}
+            </span>
+          </div>
         </div>
-        <div className="p-4 min-h-[300px]">
+        <div className="p-3 min-h-[100px]">
           {quadrantTasks.length === 0 ? (
             <div className="flex items-center justify-center h-full text-gray-500 text-sm">
               {t("tasks", "noTasks")}
@@ -69,8 +71,8 @@ export default function MatrixView({
   };
 
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-2 gap-6">
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {renderQuadrant("Important & Urgent", true, true, "bg-[#fff1f1]")}
         {renderQuadrant("Important & Not Urgent", false, true, "bg-[#f1f6ff]")}
         {renderQuadrant("Not Important & Urgent", true, false, "bg-[#fffbf1]")}
@@ -82,21 +84,20 @@ export default function MatrixView({
         )}
       </div>
 
-      <Card className="rounded-2xl border-0 shadow-sm overflow-hidden">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h3 className="font-medium text-gray-900">
-            {t("tasks", "completed")}
-          </h3>
-          <span className="text-sm text-gray-500">
-            {completedTasks.length} completed tasks
-          </span>
-        </div>
-        <div className="p-4">
-          {completedTasks.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              {t("tasks", "noTasks")}
+      {completedTasks.length > 0 && (
+        <Card className="rounded-lg border-0 overflow-hidden">
+          <div className="flex justify-between items-center p-3 border-b">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-medium text-gray-900">
+                {t("tasks", "completed")}
+              </h3>
+              <span className="text-xs text-gray-500">
+                {completedTasks.length}{" "}
+                {completedTasks.length === 1 ? "task" : "tasks"}
+              </span>
             </div>
-          ) : (
+          </div>
+          <div className="p-3">
             <div className="space-y-2">
               {completedTasks.map((task) => (
                 <TaskCard
@@ -108,9 +109,9 @@ export default function MatrixView({
                 />
               ))}
             </div>
-          )}
-        </div>
-      </Card>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }

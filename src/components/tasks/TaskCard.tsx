@@ -33,20 +33,20 @@ export function TaskCard({
   const [isViewOpen, setIsViewOpen] = useState(false);
 
   return (
-    <div className="flex items-center justify-between gap-2 bg-white rounded-lg p-3 shadow-sm group">
+    <div className="flex items-center justify-between gap-2 bg-white rounded-lg p-2 md:p-3 shadow-sm group">
       <div className="flex items-center gap-2 flex-1">
         <div className="flex items-center gap-2">
           <input
             type="checkbox"
             checked={task.completed}
             onChange={() => onComplete(task.id)}
-            className="h-4 w-4 rounded border-gray-300"
+            className="h-4 w-4 rounded border-gray-300 flex-shrink-0"
           />
           {task.completed && (
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 px-2 text-xs text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+              className="h-6 px-1 md:px-2 text-xs text-blue-500 hover:text-blue-600 hover:bg-blue-50"
               onClick={() => onComplete(task.id)}
             >
               <Undo2 className="h-3 w-3 mr-1" />
@@ -54,16 +54,16 @@ export function TaskCard({
             </Button>
           )}
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col min-w-0">
           <span
-            className={
-              task.completed ? "line-through text-gray-500" : "text-gray-900"
-            }
+            className={`truncate text-sm md:text-base ${task.completed ? "line-through text-gray-500" : "text-gray-900"}`}
           >
             {task.title}
           </span>
           {task.category && task.category !== "uncategorized" && (
-            <span className="text-xs text-gray-500">{task.category}</span>
+            <span className="text-xs text-gray-500 truncate">
+              {task.category}
+            </span>
           )}
         </div>
       </div>

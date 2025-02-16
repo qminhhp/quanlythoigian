@@ -294,12 +294,12 @@ function TaskManager() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="max-w-4xl mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
       <div className="flex justify-between items-center">
         <Tabs
           value={activeView}
           onValueChange={setActiveView}
-          className="w-[400px]"
+          className="w-full max-w-[400px]"
         >
           <TabsList>
             <TabsTrigger value="matrix">{t("tasks", "matrix")}</TabsTrigger>
