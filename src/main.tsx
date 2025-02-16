@@ -6,8 +6,9 @@ import { BrowserRouter } from "react-router-dom";
 
 // Import the dev tools and initialize them
 if (import.meta.env.VITE_TEMPO === "true") {
-  const { TempoDevtools } = await import("tempo-devtools");
-  TempoDevtools.init();
+  import("tempo-devtools").then(({ TempoDevtools }) => {
+    TempoDevtools.init();
+  });
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
