@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./components/home";
+import SettingsView from "./components/settings/SettingsView";
 import { AuthForm } from "./components/auth/AuthForm";
 import { ProfileForm } from "./components/auth/ProfileForm";
 import { AuthProvider } from "./components/auth/AuthProvider";
@@ -51,6 +52,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Home />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <PrivateRoute>
+                <SettingsView />
               </PrivateRoute>
             }
           />
