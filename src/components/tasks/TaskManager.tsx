@@ -108,13 +108,70 @@ function TaskManager() {
     fetchTasks();
   };
 
+  const checkForBadges = async () => {
+    if (!user) return;
+
+    // Get all badges
+    const { data: badges } = await supabase.from("badges").select("*");
+
+    if (!badges) return;
+
+    // Get user's earned badges
+    const { data: userBadges } = await supabase
+      .from("user_badges")
+      .select("badge_id")
+      .eq("user_id", user.id);
+
+    const earnedBadgeIds = new Set(userBadges?.map((ub) => ub.badge_id));
+
+    // Get completed tasks count
+    const { count: tasksCompleted } = await supabase
+      .from("tasks")
+      .select("*", { count: "exact" })
+      .eq("user_id", user.id)
+      .eq("completed", true);
+
+    // Get important tasks completed count
+    const { count: importantTasksCompleted } = await supabase
+      .from("tasks")
+      .select("*", { count: "exact" })
+      .eq("user_id", user.id)
+      .eq("completed", true)
+      .eq("is_important", true);
+
+    // Check each badge
+    for (const badge of badges) {
+      if (earnedBadgeIds.has(badge.id)) continue;
+
+      let shouldAward = false;
+
+      switch (badge.requirement_type) {
+        case "tasks_completed":
+          shouldAward = tasksCompleted >= badge.requirement_value;
+          break;
+        case "important_tasks":
+          shouldAward = importantTasksCompleted >= badge.requirement_value;
+          break;
+      }
+
+      if (shouldAward) {
+        await supabase.from("user_badges").insert({
+          user_id: user.id,
+          badge_id: badge.id,
+        });
+      }
+    }
+  };
+
   const handleTaskComplete = async (taskId: string) => {
     const task = tasks.find((t) => t.id === taskId);
     if (!task) return;
 
+    const newCompletedState = !task.completed;
+
     const { error } = await supabase
       .from("tasks")
-      .update({ completed: !task.completed })
+      .update({ completed: newCompletedState })
       .eq("id", taskId);
 
     if (error) {
@@ -122,14 +179,15 @@ function TaskManager() {
       return;
     }
 
-    // Add experience points when completing a task
-    if (!task.completed) {
+    // Add experience points when completing a task (not when uncompleting)
+    if (newCompletedState) {
       const baseXP = 10;
       const urgencyBonus = task.is_urgent ? 5 : 0;
       const importanceBonus = task.is_important ? 5 : 0;
       const totalXP = baseXP + urgencyBonus + importanceBonus;
 
       await addExperience(totalXP);
+      await checkForBadges();
     }
 
     fetchTasks();
@@ -149,38 +207,59 @@ function TaskManager() {
   const addExperience = async (amount: number) => {
     if (!user) return;
 
-    const { data: levelData } = await supabase
-      .from("user_levels")
-      .select("*")
-      .eq("user_id", user.id)
-      .single();
+    try {
+      // First try to update existing record
+      const { data: levelData, error: selectError } = await supabase
+        .from("user_levels")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
 
-    if (!levelData) {
-      await supabase.from("user_levels").insert({
-        user_id: user.id,
-        level: 1,
-        experience: amount,
-      });
-      return;
-    }
+      if (selectError || !levelData) {
+        // If no record exists, create one
+        const { error: insertError } = await supabase
+          .from("user_levels")
+          .insert({
+            user_id: user.id,
+            level: 1,
+            experience: amount,
+          });
+        if (insertError) throw insertError;
 
-    const newExperience = levelData.experience + amount;
-    const newLevel = Math.floor(newExperience / 100) + 1;
+        setUserProgress((prev) => ({
+          ...prev,
+          level: 1,
+          experience: amount,
+        }));
+        return;
+      }
 
-    await supabase
-      .from("user_levels")
-      .update({
-        experience: newExperience,
+      const newExperience = levelData.experience + amount;
+      const newLevel = Math.floor(newExperience / 100) + 1;
+
+      const { error: updateError } = await supabase
+        .from("user_levels")
+        .update({
+          experience: newExperience,
+          level: newLevel,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", user.id);
+
+      if (updateError) throw updateError;
+
+      setUserProgress((prev) => ({
+        ...prev,
         level: newLevel,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", user.id);
+        experience: newExperience,
+      }));
 
-    setUserProgress((prev) => ({
-      ...prev,
-      level: newLevel,
-      experience: newExperience,
-    }));
+      console.log(
+        `Added ${amount} XP. New total: ${newExperience} (Level ${newLevel})`,
+      );
+    } catch (error) {
+      console.error("Error updating experience:", error);
+    }
   };
 
   return (

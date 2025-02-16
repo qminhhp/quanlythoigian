@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Header } from "@/components/ui/header";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
@@ -113,84 +114,87 @@ export default function BadgeView() {
     100;
 
   return (
-    <div className="space-y-8">
-      {/* Level Progress */}
-      <Card className="p-6 bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-2xl font-bold">Level {userLevel.level}</h2>
-            <p className="text-indigo-100">
-              Experience: {userLevel.experience} XP
-            </p>
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="max-w-4xl mx-auto p-6 space-y-8">
+        {/* Level Progress */}
+        <Card className="p-6 bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-2xl font-bold">Level {userLevel.level}</h2>
+              <p className="text-indigo-100">
+                Experience: {userLevel.experience} XP
+              </p>
+            </div>
+            <Crown className="w-12 h-12 text-yellow-300" />
           </div>
-          <Crown className="w-12 h-12 text-yellow-300" />
-        </div>
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Progress to Level {userLevel.level + 1}</span>
-            <span>{Math.round(progress)}%</span>
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>Progress to Level {userLevel.level + 1}</span>
+              <span>{Math.round(progress)}%</span>
+            </div>
+            <Progress value={progress} className="h-2 bg-indigo-200" />
           </div>
-          <Progress value={progress} className="h-2 bg-indigo-200" />
-        </div>
-      </Card>
+        </Card>
 
-      {/* Badges by Category */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {Object.entries(groupedBadges).map(([category, categoryBadges]) => (
-          <Card key={category} className="p-6">
-            <h3 className="text-lg font-semibold mb-4 capitalize">
-              {category} Badges
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              {categoryBadges.map((badge) => {
-                const earned = userBadges.some(
-                  (ub) => ub.badge_id === badge.id,
-                );
-                const colors = COLORS[badge.category];
+        {/* Badges by Category */}
+        <div className="grid gap-6 md:grid-cols-2">
+          {Object.entries(groupedBadges).map(([category, categoryBadges]) => (
+            <Card key={category} className="p-6">
+              <h3 className="text-lg font-semibold mb-4 capitalize">
+                {category} Badges
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                {categoryBadges.map((badge) => {
+                  const earned = userBadges.some(
+                    (ub) => ub.badge_id === badge.id,
+                  );
+                  const colors = COLORS[badge.category];
 
-                return (
-                  <div
-                    key={badge.id}
-                    className={`p-4 rounded-lg border ${earned ? colors.border : "border-gray-200"} 
+                  return (
+                    <div
+                      key={badge.id}
+                      className={`p-4 rounded-lg border ${earned ? colors.border : "border-gray-200"} 
                       ${earned ? colors.bg : "bg-gray-50"} transition-colors duration-200`}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div
-                        className={`p-2 rounded-full ${earned ? colors.bg : "bg-gray-100"}`}
-                      >
-                        {ICONS[badge.icon] || <Award className="w-6 h-6" />}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div
+                          className={`p-2 rounded-full ${earned ? colors.bg : "bg-gray-100"}`}
+                        >
+                          {ICONS[badge.icon] || <Award className="w-6 h-6" />}
+                        </div>
+                        {earned && (
+                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-600">
+                            Earned!
+                          </span>
+                        )}
                       </div>
-                      {earned && (
-                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-600">
-                          Earned!
-                        </span>
+                      <h4
+                        className={`mt-3 font-medium ${earned ? colors.text : "text-gray-600"}`}
+                      >
+                        {badge.name}
+                      </h4>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {badge.description}
+                      </p>
+                      {!earned && (
+                        <div className="mt-2">
+                          <Progress
+                            value={
+                              (userLevel.experience / badge.requirement_value) *
+                              100
+                            }
+                            className="h-1"
+                          />
+                        </div>
                       )}
                     </div>
-                    <h4
-                      className={`mt-3 font-medium ${earned ? colors.text : "text-gray-600"}`}
-                    >
-                      {badge.name}
-                    </h4>
-                    <p className="mt-1 text-sm text-gray-500">
-                      {badge.description}
-                    </p>
-                    {!earned && (
-                      <div className="mt-2">
-                        <Progress
-                          value={
-                            (userLevel.experience / badge.requirement_value) *
-                            100
-                          }
-                          className="h-1"
-                        />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-        ))}
+                  );
+                })}
+              </div>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );

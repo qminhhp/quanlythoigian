@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Header } from "@/components/ui/header";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -85,6 +86,38 @@ export default function HabitView() {
       .eq("user_id", user.id);
   };
 
+  const checkForBadges = async (streak: number) => {
+    if (!user) return;
+
+    // Get all badges
+    const { data: badges } = await supabase.from("badges").select("*");
+
+    if (!badges) return;
+
+    // Get user's earned badges
+    const { data: userBadges } = await supabase
+      .from("user_badges")
+      .select("badge_id")
+      .eq("user_id", user.id);
+
+    const earnedBadgeIds = new Set(userBadges?.map((ub) => ub.badge_id));
+
+    // Check streak badges
+    for (const badge of badges) {
+      if (earnedBadgeIds.has(badge.id)) continue;
+
+      if (
+        badge.requirement_type === "habit_streak" &&
+        streak >= badge.requirement_value
+      ) {
+        await supabase.from("user_badges").insert({
+          user_id: user.id,
+          badge_id: badge.id,
+        });
+      }
+    }
+  };
+
   const handleComplete = async (habitId: string) => {
     const habit = habits.find((h) => h.id === habitId);
     if (!habit) return;
@@ -145,6 +178,7 @@ export default function HabitView() {
       const totalXP = baseXP + streakBonus + milestoneBonus;
 
       await addExperience(totalXP);
+      await checkForBadges(newStreak);
     }
 
     fetchHabits();
@@ -182,46 +216,49 @@ export default function HabitView() {
   const archivedHabits = habits.filter((h) => h.archived_at);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <Button
-            variant="outline"
-            onClick={() => setShowArchived(!showArchived)}
-          >
-            {showArchived ? "Show Active" : "Show Archived"}
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="max-w-4xl mx-auto p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <Button
+              variant="outline"
+              onClick={() => setShowArchived(!showArchived)}
+            >
+              {showArchived ? "Show Active" : "Show Archived"}
+            </Button>
+          </div>
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <PlusCircle className="h-4 w-4 mr-2" />
+            New Habit
           </Button>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          New Habit
-        </Button>
-      </div>
 
-      <div className="space-y-4">
-        {(showArchived ? archivedHabits : activeHabits).map((habit) => (
-          <HabitCard
-            key={habit.id}
-            habit={habit}
-            onComplete={handleComplete}
-            onArchive={handleArchive}
-            onUnarchive={handleUnarchive}
-          />
-        ))}
-        {(showArchived ? archivedHabits : activeHabits).length === 0 && (
-          <div className="text-center text-gray-500 py-8">
-            {showArchived
-              ? "No archived habits"
-              : "No active habits. Create one to get started!"}
-          </div>
-        )}
-      </div>
+        <div className="space-y-4">
+          {(showArchived ? archivedHabits : activeHabits).map((habit) => (
+            <HabitCard
+              key={habit.id}
+              habit={habit}
+              onComplete={handleComplete}
+              onArchive={handleArchive}
+              onUnarchive={handleUnarchive}
+            />
+          ))}
+          {(showArchived ? archivedHabits : activeHabits).length === 0 && (
+            <div className="text-center text-gray-500 py-8">
+              {showArchived
+                ? "No archived habits"
+                : "No active habits. Create one to get started!"}
+            </div>
+          )}
+        </div>
 
-      <HabitDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onSubmit={handleCreateHabit}
-      />
+        <HabitDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          onSubmit={handleCreateHabit}
+        />
+      </div>
     </div>
   );
 }

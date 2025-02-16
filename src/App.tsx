@@ -7,6 +7,8 @@ import { ProfileForm } from "./components/auth/ProfileForm";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { useAuth } from "./lib/auth";
 import SuccessSignup from "./components/auth/SuccessSignup";
+import HabitView from "./components/habits/HabitView";
+import BadgeView from "./components/badges/BadgeView";
 import { Toaster } from "@/components/ui/toaster";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -68,6 +70,22 @@ function App() {
               element={
                 <PrivateRoute>
                   <SettingsView />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/habits"
+              element={
+                <PrivateRoute>
+                  <HabitView />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/badges"
+              element={
+                <PrivateRoute>
+                  <BadgeView />
                 </PrivateRoute>
               }
             />

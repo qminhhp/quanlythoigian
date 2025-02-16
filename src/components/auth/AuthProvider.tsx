@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string,
     metadata: UserMetadata,
   ) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -43,6 +43,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     });
     if (error) throw error;
+
+    // Initialize user_levels record
+    if (data.user) {
+      const { error: levelsError } = await supabase.from("user_levels").insert({
+        user_id: data.user.id,
+        level: 1,
+        experience: 0,
+      });
+      if (levelsError) {
+        console.error("Error creating user levels:", levelsError);
+      }
+    }
   };
 
   const signIn = async (email: string, password: string) => {
@@ -56,6 +68,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw error;
     }
     console.log("Sign in successful:", data);
+
+    // Ensure user_levels record exists
+    if (data.user) {
+      const { data: levelData } = await supabase
+        .from("user_levels")
+        .select("*")
+        .eq("user_id", data.user.id)
+        .single();
+
+      if (!levelData) {
+        const { error: levelsError } = await supabase
+          .from("user_levels")
+          .insert({
+            user_id: data.user.id,
+            level: 1,
+            experience: 0,
+          });
+        if (levelsError) {
+          console.error("Error creating user levels:", levelsError);
+        }
+      }
+    }
   };
 
   const signOut = async () => {
