@@ -1,5 +1,10 @@
 import { Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  Navigate,
+  useRoutes as useReactRoutes,
+} from "react-router-dom";
 import Home from "./components/home";
 import SettingsView from "./components/settings/SettingsView";
 import { AuthForm } from "./components/auth/AuthForm";
@@ -31,7 +36,7 @@ function App() {
         <Routes>
           {/* Tempo routes */}
           {import.meta.env.VITE_TEMPO === "true" && (
-            <Route path="/tempobook/*" element={<></>} />
+            <Route path="/tempobook/*" />
           )}
 
           {/* Auth routes */}
