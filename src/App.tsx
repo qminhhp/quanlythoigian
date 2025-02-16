@@ -52,8 +52,9 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route path="/" element={<AuthForm />} />
           <Route
-            path="/"
+            path="/home"
             element={
               <PrivateRoute>
                 <Home />
