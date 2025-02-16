@@ -50,6 +50,7 @@ const TIMEZONES = [
 ];
 
 export function AuthForm() {
+  console.log("AuthForm rendering");
   const navigate = useNavigate();
   const { user } = useAuth();
 

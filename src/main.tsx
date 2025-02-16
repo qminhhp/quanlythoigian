@@ -53,6 +53,7 @@ if (import.meta.env.VITE_TEMPO === "true") {
     .catch(console.error);
 }
 
+console.log("Starting app initialization");
 const root = document.getElementById("root");
 
 if (!root) {

@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { AuthContext, UserMetadata } from "@/lib/auth";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  console.log("AuthProvider rendering");
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
