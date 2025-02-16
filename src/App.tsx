@@ -11,13 +11,17 @@ import SuccessSignup from "./components/auth/SuccessSignup";
 import HabitView from "./components/habits/HabitView";
 import BadgeView from "./components/badges/BadgeView";
 import { Toaster } from "@/components/ui/toaster";
+import { Analytics } from "@vercel/analytics/react";
 import { AdminLayout } from "./components/admin/AdminLayout";
 import { ScriptsManager } from "./components/admin/ScriptsManager";
 import { BlogManager } from "./components/admin/BlogManager";
+import { PageManager } from "./components/admin/PageManager";
+import { Footer } from "./components/ui/footer";
 import { BlogList } from "./components/blog/BlogList";
 import { BlogPost } from "./components/blog/BlogPost";
 import { BlogLayout } from "./components/blog/BlogLayout";
 import LandingPage from "./components/landing/LandingPage";
+import PageView from "./components/pages/PageView";
 import { supabase } from "./lib/supabase";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -60,7 +64,7 @@ function App() {
   console.log("Current hostname:", window.location.hostname); // Debug log
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {scripts.header && (
         <div dangerouslySetInnerHTML={{ __html: scripts.header }} />
       )}
@@ -92,7 +96,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              <Route path="/" element={<LandingPage />} />
+              <Route path="/" element={<PageView />} />
               <Route
                 path="/home"
                 element={
@@ -132,7 +136,7 @@ function App() {
                 element={
                   <PrivateRoute>
                     <AdminLayout>
-                      <Navigate to="/admin/blog" replace />
+                      <Navigate to="/admin/pages" replace />
                     </AdminLayout>
                   </PrivateRoute>
                 }
@@ -157,6 +161,19 @@ function App() {
                   </PrivateRoute>
                 }
               />
+              <Route
+                path="/admin/pages"
+                element={
+                  <PrivateRoute>
+                    <AdminLayout>
+                      <PageManager />
+                    </AdminLayout>
+                  </PrivateRoute>
+                }
+              />
+
+              {/* Pages route */}
+              <Route path="/:slug" element={<PageView />} />
 
               {/* Blog routes */}
               {/* Blog routes - accessible to both logged-in and non-logged-in users */}
@@ -181,6 +198,8 @@ function App() {
             </Routes>
           </Suspense>
           <Toaster />
+          <Analytics />
+          <Footer />
         </AuthProvider>
       </LanguageProvider>
       {scripts.footer && (
