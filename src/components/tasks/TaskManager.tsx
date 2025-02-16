@@ -1,307 +1,239 @@
-import { useState, useCallback, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/lib/supabase";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
-import { Task } from "@/types/task";
-import BadgeView from "../badges/BadgeView";
-import HabitView from "../habits/HabitView";
-import MatrixView from "@/components/matrix/MatrixView";
+import { supabase } from "@/lib/supabase";
+import { Task, UserProgress } from "@/types/task";
 import { Button } from "@/components/ui/button";
-import CategoryView from "./CategoryView";
-import { Dialog } from "@/components/ui/dialog";
 import { PlusCircle } from "lucide-react";
-import { NavTabs } from "@/components/ui/nav-tabs";
 import { TaskDialog } from "./TaskDialog";
+import MatrixView from "../matrix/MatrixView";
+import CategoryView from "./CategoryView";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const TABS = [
-  { id: "priority", label: "Priority Matrix" },
-  { id: "category", label: "Categories" },
-  { id: "habits", label: "Habits" },
-  { id: "badges", label: "Badges" },
-];
-
-export default function TaskManager() {
-  const { toast } = useToast();
+function TaskManager() {
   const { user } = useAuth();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("priority");
-  const [editingTask, setEditingTask] = useState<Task | undefined>();
   const [tasks, setTasks] = useState<Task[]>([]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchTasks = async () => {
-      const { data, error } = await supabase
-        .from("tasks")
-        .select("*")
-        .or(`user_id.eq.${user.id},assignee_id.eq.${user.id}`);
-
-      if (error) {
-        console.error("Error fetching tasks:", error);
-        return;
-      }
-
-      setTasks(data);
-    };
-
-    fetchTasks();
-
-    const subscription = supabase
-      .channel("tasks")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "tasks" },
-        fetchTasks,
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [user]);
-
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | undefined>();
   const [userProgress, setUserProgress] = useState<UserProgress>({
     level: 1,
     experience: 0,
     badges: [],
   });
 
-  const handleAddEditTask = async (data: Partial<Task>) => {
+  useEffect(() => {
     if (!user) return;
+    fetchTasks();
+    fetchUserProgress();
+  }, [user]);
 
-    const taskData = {
-      title: data.title || "",
-      description: data.description || "",
-      is_urgent: Boolean(data.is_urgent),
-      is_important: Boolean(data.is_important),
-      assignee_id: data.assignee_id || undefined,
-      user_id: user.id,
-      due_date: data.due_date || null,
-      repeat_frequency: data.repeat_frequency || "none",
-      category: data.category || "uncategorized",
-      completed: false,
-    };
-    if (editingTask) {
-      const { error } = await supabase
-        .from("tasks")
-        .update(taskData)
-        .eq("id", editingTask.id);
-
-      if (error) {
-        console.error("Error updating task:", error);
-        return;
-      }
-      setEditingTask(undefined);
-    } else {
-      const { error } = await supabase.from("tasks").insert([taskData]);
-
-      if (error) {
-        console.error("Error creating task:", error);
-        return;
-      }
-    }
-  };
-
-  const handleEditTask = useCallback((task: Task) => {
-    setEditingTask(task);
-    setIsDialogOpen(true);
-  }, []);
-
-  const handleDeleteTask = useCallback((taskId: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== taskId));
-  }, []);
-
-  const checkAndAwardBadges = async (userId: string, taskId: string) => {
-    const { data: stats } = await supabase
+  const fetchTasks = async () => {
+    const { data, error } = await supabase
       .from("tasks")
-      .select("count(*)")
-      .eq("user_id", userId)
-      .eq("completed", true);
-
-    const completedCount = stats?.[0]?.count || 0;
-
-    // Check for completion badges
-    const { data: badges } = await supabase
-      .from("badges")
       .select("*")
-      .eq("category", "tasks")
-      .lte("requirement_value", completedCount);
+      .eq("user_id", user?.id);
 
-    // Award new badges
-    if (badges) {
-      for (const badge of badges) {
-        const { data: existing } = await supabase
-          .from("user_badges")
-          .select("*")
-          .eq("user_id", userId)
-          .eq("badge_id", badge.id)
-          .single();
-
-        if (!existing) {
-          await supabase.from("user_badges").insert({
-            user_id: userId,
-            badge_id: badge.id,
-          });
-
-          // Show toast for new badge
-          toast({
-            title: `🎉 New Badge Unlocked!`,
-            description: `${badge.name} - ${badge.description}`,
-            duration: 5000,
-          });
-        }
-      }
+    if (error) {
+      console.error("Error fetching tasks:", error);
+      return;
     }
+
+    setTasks(data || []);
   };
 
-  const handleTaskXPAndBadges = async (taskId: string): Promise<void> => {
+  const fetchUserProgress = async () => {
     if (!user) return;
 
-    const taskToUpdate = tasks.find((t) => t.id === taskId);
-    if (!taskToUpdate) return;
+    const { data: levelData } = await supabase
+      .from("user_levels")
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
 
-    let xp = 10; // Base XP
-    if (taskToUpdate.is_urgent) xp += 5;
-    if (taskToUpdate.is_important) xp += 5;
-    if (taskToUpdate.description) xp += 2; // Bonus for detailed tasks
-    if (taskToUpdate.category && taskToUpdate.category !== "uncategorized")
-      xp += 3;
-
-    // Add streak bonus
-    const now = new Date();
-    const hour = now.getHours();
-    if (hour < 7) xp += 5; // Early bird bonus
-    if (hour >= 22) xp += 5; // Night owl bonus
-    if (now.getDay() === 0 || now.getDay() === 6) xp += 3; // Weekend bonus
-
-    try {
-      // Update user level
-      const { data: levelData } = await supabase
-        .from("user_levels")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
-
-      if (!levelData) {
-        await supabase.from("user_levels").insert({
-          user_id: user.id,
-          level: 1,
-          experience: xp,
-        });
-      } else {
-        const newExperience = levelData.experience + xp;
-        const newLevel = Math.floor(newExperience / 100) + 1;
-
-        await supabase
-          .from("user_levels")
-          .update({
-            experience: newExperience,
-            level: newLevel,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("user_id", user.id);
-
-        if (newLevel > levelData.level) {
-          toast({
-            title: "🎉 Level Up!",
-            description: `You've reached level ${newLevel}!`,
-            duration: 5000,
-          });
-        }
-      }
-
-      // Check and award badges
-      await checkAndAwardBadges(user.id, taskId);
-    } catch (error) {
-      console.error("Error updating user progress:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update progress",
-        variant: "destructive",
-      });
+    if (levelData) {
+      setUserProgress((prev) => ({
+        ...prev,
+        level: levelData.level,
+        experience: levelData.experience,
+      }));
     }
   };
 
-  const handleTaskComplete = async (taskId: string) => {
-    const taskToUpdate = tasks.find((task) => task.id === taskId);
-    if (!taskToUpdate) return;
+  const handleCreateTask = async (data: Partial<Task>) => {
+    if (!user) return;
 
-    const newCompletedState = !taskToUpdate.completed;
+    const { error } = await supabase.from("tasks").insert([
+      {
+        user_id: user.id,
+        title: data.title,
+        description: data.description,
+        due_date: data.due_date,
+        repeat_frequency: data.repeat_frequency || "none",
+        is_urgent: data.is_urgent || false,
+        is_important: data.is_important || false,
+        category: data.category || "uncategorized",
+        completed: false,
+      },
+    ]);
 
-    // Update in Supabase
+    if (error) {
+      console.error("Error creating task:", error);
+      return;
+    }
+
+    fetchTasks();
+  };
+
+  const handleEditTask = async (data: Partial<Task>) => {
+    if (!editingTask) return;
+
     const { error } = await supabase
       .from("tasks")
-      .update({ completed: newCompletedState })
-      .eq("id", taskId);
+      .update({
+        title: data.title,
+        description: data.description,
+        due_date: data.due_date,
+        repeat_frequency: data.repeat_frequency,
+        is_urgent: data.is_urgent,
+        is_important: data.is_important,
+        category: data.category,
+      })
+      .eq("id", editingTask.id);
 
     if (error) {
       console.error("Error updating task:", error);
       return;
     }
 
-    // Update local state immediately for UI responsiveness
-    setTasks((prev) =>
-      prev.map((task) => {
-        if (task.id === taskId) {
-          return { ...task, completed: newCompletedState };
-        }
-        return task;
-      }),
-    );
+    setEditingTask(undefined);
+    fetchTasks();
+  };
 
-    // Handle XP and badges in a separate async function
-    if (newCompletedState && user) {
-      try {
-        await handleTaskXPAndBadges(taskId);
-      } catch (error) {
-        console.error("Error handling XP and badges:", error);
-      }
+  const handleTaskComplete = async (taskId: string) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    const { error } = await supabase
+      .from("tasks")
+      .update({ completed: !task.completed })
+      .eq("id", taskId);
+
+    if (error) {
+      console.error("Error completing task:", error);
+      return;
     }
+
+    // Add experience points when completing a task
+    if (!task.completed) {
+      const baseXP = 10;
+      const urgencyBonus = task.is_urgent ? 5 : 0;
+      const importanceBonus = task.is_important ? 5 : 0;
+      const totalXP = baseXP + urgencyBonus + importanceBonus;
+
+      await addExperience(totalXP);
+    }
+
+    fetchTasks();
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    const { error } = await supabase.from("tasks").delete().eq("id", taskId);
+
+    if (error) {
+      console.error("Error deleting task:", error);
+      return;
+    }
+
+    fetchTasks();
+  };
+
+  const addExperience = async (amount: number) => {
+    if (!user) return;
+
+    const { data: levelData } = await supabase
+      .from("user_levels")
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!levelData) {
+      await supabase.from("user_levels").insert({
+        user_id: user.id,
+        level: 1,
+        experience: amount,
+      });
+      return;
+    }
+
+    const newExperience = levelData.experience + amount;
+    const newLevel = Math.floor(newExperience / 100) + 1;
+
+    await supabase
+      .from("user_levels")
+      .update({
+        experience: newExperience,
+        level: newLevel,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", user.id);
+
+    setUserProgress((prev) => ({
+      ...prev,
+      level: newLevel,
+      experience: newExperience,
+    }));
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-xl font-semibold">Organize tasks by priority</h1>
-        <Button
-          className="bg-[#0f172a] text-white hover:bg-[#1e293b]"
-          onClick={() => setIsDialogOpen(true)}
-        >
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Task
+        <Tabs defaultValue="matrix" className="w-[400px]">
+          <TabsList>
+            <TabsTrigger value="matrix">Matrix</TabsTrigger>
+            <TabsTrigger value="category">Categories</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <Button onClick={() => setIsDialogOpen(true)}>
+          <PlusCircle className="h-4 w-4 mr-2" />
+          New Task
         </Button>
       </div>
 
-      <NavTabs tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
-
-      <div className="mt-6">
-        {activeTab === "priority" && (
+      <Tabs defaultValue="matrix">
+        <TabsContent value="matrix">
           <MatrixView
             tasks={tasks}
             onTaskComplete={handleTaskComplete}
-            onEditTask={handleEditTask}
+            onEditTask={(task) => {
+              setEditingTask(task);
+              setIsDialogOpen(true);
+            }}
             onDeleteTask={handleDeleteTask}
           />
-        )}
-        {activeTab === "category" && (
+        </TabsContent>
+        <TabsContent value="category">
           <CategoryView
             tasks={tasks}
             onTaskComplete={handleTaskComplete}
-            onEditTask={handleEditTask}
+            onEditTask={(task) => {
+              setEditingTask(task);
+              setIsDialogOpen(true);
+            }}
             onDeleteTask={handleDeleteTask}
           />
-        )}
-        {activeTab === "habits" && <HabitView />}
-        {activeTab === "badges" && <BadgeView />}
+        </TabsContent>
+      </Tabs>
 
-        <TaskDialog
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          onSubmit={handleAddEditTask}
-          task={editingTask}
-        />
-      </div>
+      <TaskDialog
+        open={isDialogOpen}
+        onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) setEditingTask(undefined);
+        }}
+        onSubmit={editingTask ? handleEditTask : handleCreateTask}
+        task={editingTask}
+      />
     </div>
   );
 }
+
+export default TaskManager;

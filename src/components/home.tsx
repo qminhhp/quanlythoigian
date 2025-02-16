@@ -1,4 +1,4 @@
-import TaskManager from "./tasks/TaskManager";
+import TaskManager from "@/components/tasks/TaskManager";
 import { Header } from "./ui/header";
 
 function Home() {

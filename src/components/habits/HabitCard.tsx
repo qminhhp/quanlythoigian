@@ -117,10 +117,12 @@ export function HabitCard({
             className="w-full"
             onClick={handleComplete}
             disabled={
-              habit.archived_at ||
-              (habit.last_completed &&
+              !!habit.archived_at ||
+              !!(
+                habit.last_completed &&
                 new Date(habit.last_completed).toDateString() ===
-                  new Date().toDateString())
+                  new Date().toDateString()
+              )
             }
           >
             Complete for today
