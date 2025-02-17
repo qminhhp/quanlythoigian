@@ -2,7 +2,6 @@ import { Suspense, lazy } from "react";
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./components/auth/AuthProvider";
-import { LanguageProvider } from "./lib/i18n/LanguageContext";
 import { useAuth } from "./lib/auth";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -70,8 +69,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <LanguageProvider>
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
         <AuthProvider>
           <Suspense
             fallback={
@@ -202,7 +200,6 @@ function App() {
           <Toaster />
         </AuthProvider>
       </div>
-    </LanguageProvider>
   );
 }
 
