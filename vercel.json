@@ -1,1 +1,2 @@
-{"rewrites":[{"source":"/(.*)","destination":"/index.html"}],"buildCommand":"VITE_TEMPO=false npm run build","outputDirectory":"dist","framework":"vite"}
+{"rewrites":[{"source":"/(.*)","destination":"/index.html"}],"buildCommand":"npm run build",
+  "deployCommand": "wrangler deploy","outputDirectory":"dist","framework":"vite"}
