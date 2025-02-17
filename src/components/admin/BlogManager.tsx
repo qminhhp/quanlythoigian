@@ -156,6 +156,43 @@ export function BlogManager() {
     }
   };
 
+  const handleImageUpload = async (file: File) => {
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}-${Math.random()}.${fileExt}`
+      const filePath = `blog-images/${fileName}`
+      
+      // Upload to Supabase storage
+      const { data, error } = await supabase.storage
+        .from('blog-images')
+        .upload(filePath, file)
+        
+      if (error) throw error
+        
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('blog-images')
+        .getPublicUrl(filePath)
+        
+      // Set the URL in form data
+      setFormData(prev => ({
+        ...prev,
+        og_image: publicUrl
+      }))
+      
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to upload image",
+        variant: "destructive"
+      })
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card className="p-6">
@@ -322,13 +359,31 @@ export function BlogManager() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">OG Image URL</label>
-                <Input
-                  value={formData.og_image}
-                  onChange={(e) =>
-                    setFormData({ ...formData, og_image: e.target.value })
-                  }
-                />
+                <label className="text-sm font-medium">OG Image</label>
+                <div className="space-y-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handleImageUpload(file)
+                    }}
+                  />
+                  <Input
+                    value={formData.og_image}
+                    onChange={(e) =>
+                      setFormData({ ...formData, og_image: e.target.value })
+                    }
+                    placeholder="Or enter image URL directly"
+                  />
+                  {formData.og_image && (
+                    <img 
+                      src={formData.og_image} 
+                      alt="Preview" 
+                      className="mt-2 max-w-xs rounded"
+                    />
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
