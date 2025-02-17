@@ -17,7 +17,7 @@ interface Page {
 
 export default function PageView() {
   const { slug = "home" } = useParams();
-  const { language } = useLanguage();
+  const language = "en";
   const [page, setPage] = useState<Page | null>(null);
 
   useEffect(() => {

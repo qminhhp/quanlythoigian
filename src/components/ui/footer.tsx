@@ -10,7 +10,7 @@ interface Page {
 }
 
 export function Footer() {
-  const { language } = useLanguage();
+  const language = "en";
   const [pages, setPages] = useState<Page[]>([]);
 
   useEffect(() => {

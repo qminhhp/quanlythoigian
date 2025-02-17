@@ -13,7 +13,7 @@ interface BlogPost {
 }
 
 export function BlogList() {
-  const { language } = useLanguage();
+  const language = "en";
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const { category } = useParams();
 

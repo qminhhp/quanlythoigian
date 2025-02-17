@@ -7,11 +7,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/auth";
-import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export function Header() {
   const { user, signOut } = useAuth();
-  const { t, language } = useLanguage();
 
   const handleSignOut = async () => {
     try {
@@ -30,15 +28,15 @@ export function Header() {
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <Link to="/" className="text-xl font-bold whitespace-nowrap">
-                {language === "vi" ? "Quản lý thời gian" : "ConquerDay"}
+                ConquerDay
               </Link>
             </div>
             <nav className="hidden md:flex md:ml-8 space-x-1 md:space-x-2 lg:space-x-4">
               {[
-                { to: "/home", label: t("nav", "tasks") },
-                { to: "/habits", label: t("nav", "habits") },
-                { to: "/badges", label: t("nav", "badges") },
-                { to: "/blog", label: t("nav", "blog") },
+                { to: "/home", label: "Tasks" },
+                { to: "/habits", label: "Habits" },
+                { to: "/badges", label: "Badges" },
+                { to: "/blog", label: "Blog" },
               ].map((item) => (
                 <Link
                   key={item.to}
@@ -65,16 +63,16 @@ export function Header() {
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem className="w-full">
                   <Link to="/settings" className="w-full">
-                    {t("nav", "settings")}
+                    Settings
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="w-full">
                   <Link to="/profile" className="w-full">
-                    {t("nav", "profile")}
+                    Profile
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut} className="w-full">
-                  {t("nav", "signOut")}
+                  Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

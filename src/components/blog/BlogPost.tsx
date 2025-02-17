@@ -24,7 +24,7 @@ interface BlogPost {
 
 export function BlogPost() {
   const { slug } = useParams();
-  const { language } = useLanguage();
+  const language = "en";
   const [post, setPost] = useState<BlogPost | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([]);
 

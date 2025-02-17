@@ -1,27 +1,57 @@
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import Home from "./components/home";
-import SettingsView from "./components/settings/SettingsView";
-import { AuthForm } from "./components/auth/AuthForm";
-import { ProfileForm } from "./components/auth/ProfileForm";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { LanguageProvider } from "./lib/i18n/LanguageContext";
 import { useAuth } from "./lib/auth";
-import SuccessSignup from "./components/auth/SuccessSignup";
-import HabitView from "./components/habits/HabitView";
-import BadgeView from "./components/badges/BadgeView";
 import { Toaster } from "@/components/ui/toaster";
-import { AdminLayout } from "./components/admin/AdminLayout";
-import { ScriptsManager } from "./components/admin/ScriptsManager";
-import { BlogManager } from "./components/admin/BlogManager";
-import { PageManager } from "./components/admin/PageManager";
-import { Footer } from "./components/ui/footer";
-import { BlogList } from "./components/blog/BlogList";
-import { BlogPost } from "./components/blog/BlogPost";
-import { BlogLayout } from "./components/blog/BlogLayout";
-import LandingPage from "./components/landing/LandingPage";
-import PageView from "./components/pages/PageView";
-import { supabase } from "./lib/supabase";
+
+// Lazy load components
+const Home = lazy(() => import("./components/home"));
+const SettingsView = lazy(() => import("./components/settings/SettingsView"));
+const AuthForm = lazy(() =>
+  import("./components/auth/AuthForm").then((m) => ({ default: m.AuthForm })),
+);
+const ProfileForm = lazy(() =>
+  import("./components/auth/ProfileForm").then((m) => ({
+    default: m.ProfileForm,
+  })),
+);
+const SuccessSignup = lazy(() => import("./components/auth/SuccessSignup"));
+const HabitView = lazy(() => import("./components/habits/HabitView"));
+const BadgeView = lazy(() => import("./components/badges/BadgeView"));
+const AdminLayout = lazy(() =>
+  import("./components/admin/AdminLayout").then((m) => ({
+    default: m.AdminLayout,
+  })),
+);
+const ScriptsManager = lazy(() =>
+  import("./components/admin/ScriptsManager").then((m) => ({
+    default: m.ScriptsManager,
+  })),
+);
+const BlogManager = lazy(() =>
+  import("./components/admin/BlogManager").then((m) => ({
+    default: m.BlogManager,
+  })),
+);
+const PageManager = lazy(() =>
+  import("./components/admin/PageManager").then((m) => ({
+    default: m.PageManager,
+  })),
+);
+const BlogList = lazy(() =>
+  import("./components/blog/BlogList").then((m) => ({ default: m.BlogList })),
+);
+const BlogPost = lazy(() =>
+  import("./components/blog/BlogPost").then((m) => ({ default: m.BlogPost })),
+);
+const BlogLayout = lazy(() =>
+  import("./components/blog/BlogLayout").then((m) => ({
+    default: m.BlogLayout,
+  })),
+);
+const LandingPage = lazy(() => import("./components/landing/LandingPage"));
+const PageView = lazy(() => import("./components/pages/PageView"));
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -38,36 +68,9 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  const [scripts, setScripts] = useState({ header: "", footer: "" });
-
-  useEffect(() => {
-    const loadScripts = async () => {
-      const { data } = await supabase.from("scripts").select("*");
-      if (data) {
-        const header = data.find((s) => s.type === "header");
-        const footer = data.find((s) => s.type === "footer");
-        setScripts({
-          header: header?.content || "",
-          footer: footer?.content || "",
-        });
-      }
-    };
-
-    loadScripts();
-  }, []);
-
-  document.title =
-    window.location.hostname === "quanlythoigian.com"
-      ? "Quản Lý Thời Gian"
-      : "ConquerDay - Time Management App";
-  console.log("Current hostname:", window.location.hostname); // Debug log
-
   return (
     <LanguageProvider>
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        {scripts.header && (
-          <div dangerouslySetInnerHTML={{ __html: scripts.header }} />
-        )}
         <AuthProvider>
           <Suspense
             fallback={
@@ -175,7 +178,6 @@ function App() {
               <Route path="/:slug" element={<PageView />} />
 
               {/* Blog routes */}
-              {/* Blog routes - accessible to both logged-in and non-logged-in users */}
               <Route
                 path="/blog/*"
                 element={
@@ -197,11 +199,7 @@ function App() {
             </Routes>
           </Suspense>
           <Toaster />
-          <Footer />
         </AuthProvider>
-        {scripts.footer && (
-          <div dangerouslySetInnerHTML={{ __html: scripts.footer }} />
-        )}
       </div>
     </LanguageProvider>
   );
