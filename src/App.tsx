@@ -1,4 +1,5 @@
 import { Suspense, lazy } from "react";
+import * as React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { LanguageProvider } from "./lib/i18n/LanguageContext";
