@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
-import { AuthContext, UserMetadata } from "@/lib/auth";
+import { AuthContext, UserMetadata, checkIsAdmin } from "@/lib/auth";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   console.log("AuthProvider rendering");
@@ -109,9 +109,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error;
   };
 
+  const isAdmin = async () => {
+    if (!user) return false;
+    return checkIsAdmin(user.id);
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, loading, signUp, signIn, signOut, updateProfile }}
+      value={{ user, loading, signUp, signIn, signOut, updateProfile, isAdmin }}
     >
       {children}
     </AuthContext.Provider>

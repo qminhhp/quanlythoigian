@@ -21,6 +21,7 @@ export interface AuthState {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (metadata: UserMetadata) => Promise<void>;
+  isAdmin: () => Promise<boolean>;
 }
 
 // Provide default values for the context
@@ -39,9 +40,28 @@ const defaultAuthState: AuthState = {
   updateProfile: async () => {
     throw new Error("AuthProvider not initialized");
   },
+  isAdmin: async () => {
+    throw new Error("AuthProvider not initialized");
+  },
 };
 
 export const AuthContext = createContext<AuthState>(defaultAuthState);
+
+export async function checkIsAdmin(userId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', userId)
+    .eq('role', 'admin')
+    .single();
+  
+  if (error) {
+    console.error('Error checking admin role:', error);
+    return false;
+  }
+  
+  return !!data;
+}
 
 export function useAuth() {
   return useContext(AuthContext);

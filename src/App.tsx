@@ -3,6 +3,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./components/auth/AuthProvider";
 import { useAuth } from "./lib/auth";
+import { AdminRoute } from "./components/auth/AdminRoute";
 import { Toaster } from "@/components/ui/toaster";
 
 // Lazy load components
@@ -135,41 +136,41 @@ function App() {
               <Route
                 path="/admin"
                 element={
-                  <PrivateRoute>
+                  <AdminRoute>
                     <AdminLayout>
                       <Navigate to="/admin/pages" replace />
                     </AdminLayout>
-                  </PrivateRoute>
+                  </AdminRoute>
                 }
               />
               <Route
                 path="/admin/scripts"
                 element={
-                  <PrivateRoute>
+                  <AdminRoute>
                     <AdminLayout>
                       <ScriptsManager />
                     </AdminLayout>
-                  </PrivateRoute>
+                  </AdminRoute>
                 }
               />
               <Route
                 path="/admin/blog"
                 element={
-                  <PrivateRoute>
+                  <AdminRoute>
                     <AdminLayout>
                       <BlogManager />
                     </AdminLayout>
-                  </PrivateRoute>
+                  </AdminRoute>
                 }
               />
               <Route
                 path="/admin/pages"
                 element={
-                  <PrivateRoute>
+                  <AdminRoute>
                     <AdminLayout>
                       <PageManager />
                     </AdminLayout>
-                  </PrivateRoute>
+                  </AdminRoute>
                 }
               />
 
