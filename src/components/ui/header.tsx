@@ -27,35 +27,53 @@ export function Header() {
     <header className="bg-white border-b">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-xl font-bold">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <Link to="/" className="text-xl font-bold whitespace-nowrap">
                 {language === "vi" ? "Quản lý thời gian" : "ConquerDay"}
               </Link>
             </div>
-            <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <Link to="/home">{t("nav", "tasks")}</Link>
-              <Link to="/habits">{t("nav", "habits")}</Link>
-              <Link to="/badges">{t("nav", "badges")}</Link>
-              <Link to="/blog">{t("nav", "blog")}</Link>
+            <nav className="hidden md:flex md:ml-8 space-x-1 md:space-x-2 lg:space-x-4">
+              {[
+                { to: "/home", label: t("nav", "tasks") },
+                { to: "/habits", label: t("nav", "habits") },
+                { to: "/badges", label: t("nav", "badges") },
+                { to: "/blog", label: t("nav", "blog") },
+              ].map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                >
+                  {item.label}
+                </Link>
+              ))}
             </nav>
           </div>
           <div className="flex items-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="min-w-[100px] justify-start"
+                >
                   {user.user_metadata?.displayName ||
                     user.user_metadata?.username}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <Link to="/settings">{t("nav", "settings")}</Link>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem className="w-full">
+                  <Link to="/settings" className="w-full">
+                    {t("nav", "settings")}
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link to="/profile">{t("nav", "profile")}</Link>
+                <DropdownMenuItem className="w-full">
+                  <Link to="/profile" className="w-full">
+                    {t("nav", "profile")}
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleSignOut}>
+                <DropdownMenuItem onClick={handleSignOut} className="w-full">
                   {t("nav", "signOut")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
