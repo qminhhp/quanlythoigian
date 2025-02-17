@@ -49,11 +49,7 @@ export const AuthContext = createContext<AuthState>(defaultAuthState);
 
 export async function checkIsAdmin(userId: string): Promise<boolean> {
   const { data, error } = await supabase
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', userId)
-    .eq('role', 'admin')
-    .single();
+    .rpc('is_admin', { user_id: userId });
   
   if (error) {
     console.error('Error checking admin role:', error);
