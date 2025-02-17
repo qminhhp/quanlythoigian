@@ -3,7 +3,6 @@ import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
 import { CommentSection } from "./CommentSection";
-import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 interface RelatedPost {
   slug: string;

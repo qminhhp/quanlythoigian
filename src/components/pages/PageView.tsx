@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
 import { Header } from "@/components/ui/header";

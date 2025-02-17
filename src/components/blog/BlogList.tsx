@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
-import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 interface BlogPost {
   id: string;

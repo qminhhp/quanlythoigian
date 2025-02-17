@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -54,7 +53,25 @@ export function AuthForm() {
   console.log("AuthForm rendering");
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  // Use hardcoded English strings since we don't need translations
+  const translations = {
+    resetPassword: "Reset Password",
+    createAccount: "Create Account",
+    signIn: "Sign In",
+    createToGetStarted: "Create an account to get started",
+    welcomeBack: "Welcome back",
+    email: "Email",
+    password: "Password",
+    username: "Username",
+    displayName: "Display Name",
+    timezone: "Timezone",
+    sendResetLink: "Send Reset Link",
+    signUp: "Sign Up",
+    forgotPassword: "Forgot Password?",
+    backToSignIn: "Back to Sign In",
+    alreadyHaveAccount: "Already have an account?",
+    dontHaveAccount: "Don't have an account?"
+  };
 
   useEffect(() => {
     if (user) {
@@ -117,16 +134,16 @@ export function AuthForm() {
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900">
             {isResetPassword
-              ? t("auth", "resetPassword")
+              ? translations.resetPassword
               : isSignUp
-                ? t("auth", "createAccount")
-                : t("auth", "signIn")}
+                ? translations.createAccount
+                : translations.signIn}
           </h2>
           {!isResetPassword && (
             <p className="mt-2 text-sm text-gray-600">
               {isSignUp
-                ? t("auth", "createToGetStarted")
-                : t("auth", "welcomeBack")}
+                ? translations.createToGetStarted
+                : translations.welcomeBack}
             </p>
           )}
         </div>
@@ -136,7 +153,7 @@ export function AuthForm() {
             <Input
               {...register("email")}
               type="email"
-              placeholder={t("auth", "email")}
+              placeholder={translations.email}
               className="w-full px-4 py-2"
               required
             />
@@ -145,7 +162,7 @@ export function AuthForm() {
               <Input
                 {...register("password")}
                 type="password"
-                placeholder={t("auth", "password")}
+                placeholder={translations.password}
                 className="w-full px-4 py-2"
                 required
               />
@@ -155,13 +172,13 @@ export function AuthForm() {
               <>
                 <Input
                   {...register("username")}
-                  placeholder={t("auth", "username")}
+                  placeholder={translations.username}
                   className="w-full px-4 py-2"
                   required
                 />
                 <Input
                   {...register("displayName")}
-                  placeholder={t("auth", "displayName")}
+                  placeholder={translations.displayName}
                   className="w-full px-4 py-2"
                   required
                 />
@@ -207,7 +224,7 @@ export function AuthForm() {
                   defaultValue={watch("timezone")}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t("auth", "timezone")} />
+                    <SelectValue placeholder={translations.timezone} />
                   </SelectTrigger>
                   <SelectContent>
                     {TIMEZONES.map((timezone) => (
@@ -229,10 +246,10 @@ export function AuthForm() {
             disabled={isSubmitting}
           >
             {isResetPassword
-              ? t("auth", "sendResetLink")
+              ? translations.sendResetLink
               : isSignUp
-                ? t("auth", "signUp")
-                : t("auth", "signIn")}
+                ? translations.signUp
+                : translations.signIn}
           </Button>
         </form>
 
@@ -243,7 +260,7 @@ export function AuthForm() {
               onClick={() => setIsResetPassword(true)}
               className="text-sm text-primary hover:underline w-full text-center"
             >
-              {t("auth", "forgotPassword")}
+              {translations.forgotPassword}
             </button>
           )}
 
@@ -254,19 +271,19 @@ export function AuthForm() {
                 onClick={() => setIsResetPassword(false)}
                 className="text-primary hover:underline"
               >
-                {t("auth", "backToSignIn")}
+                {translations.backToSignIn}
               </button>
             ) : (
               <>
                 {isSignUp
-                  ? t("auth", "alreadyHaveAccount")
-                  : t("auth", "dontHaveAccount")}{" "}
+                  ? translations.alreadyHaveAccount
+                  : translations.dontHaveAccount}{" "}
                 <button
                   type="button"
                   onClick={() => setIsSignUp(!isSignUp)}
                   className="text-primary hover:underline"
                 >
-                  {isSignUp ? t("auth", "signIn") : t("auth", "signUp")}
+                  {isSignUp ? translations.signIn : translations.signUp}
                 </button>
               </>
             )}

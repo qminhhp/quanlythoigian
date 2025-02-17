@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { Task } from "@/types/task";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +28,17 @@ export function TaskCard({
   onEdit,
   onDelete,
 }: TaskCardProps) {
-  const { t } = useLanguage();
+  // Use hardcoded English strings
+  const translations = {
+    undo: "Undo",
+    viewDetails: "View Details",
+    edit: "Edit",
+    delete: "Delete",
+    description: "Description",
+    created: "Created",
+    dueDate: "Due Date",
+    category: "Category"
+  };
   const [isViewOpen, setIsViewOpen] = useState(false);
 
   return (
@@ -50,7 +59,7 @@ export function TaskCard({
               onClick={() => onComplete(task.id)}
             >
               <Undo2 className="h-3 w-3 mr-1" />
-              {t("tasks", "undo")}
+              {translations.undo}
             </Button>
           )}
         </div>
@@ -80,18 +89,18 @@ export function TaskCard({
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => setIsViewOpen(true)}>
             <Eye className="h-4 w-4 mr-2" />
-            {t("tasks", "viewDetails")}
+            {translations.viewDetails}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => onEdit(task)}>
             <Edit className="h-4 w-4 mr-2" />
-            {t("tasks", "edit")}
+            {translations.edit}
           </DropdownMenuItem>
           <DropdownMenuItem
             className="text-red-600"
             onClick={() => onDelete(task.id)}
           >
             <Trash2 className="h-4 w-4 mr-2" />
-            {t("tasks", "delete")}
+            {translations.delete}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -104,7 +113,7 @@ export function TaskCard({
           <div className="space-y-4">
             <div>
               <h4 className="text-sm font-medium mb-1">
-                {t("tasks", "description")}
+                {translations.description}
               </h4>
               <p className="text-gray-600 whitespace-pre-wrap">
                 {task.description?.split("\n").map((line, i) => (
@@ -132,7 +141,7 @@ export function TaskCard({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <h4 className="text-sm font-medium mb-1">
-                  {t("tasks", "created")}
+                  {translations.created}
                 </h4>
                 <p className="text-gray-600">
                   {new Date(task.created_at).toLocaleDateString()}
@@ -141,7 +150,7 @@ export function TaskCard({
               {task.due_date && (
                 <div>
                   <h4 className="text-sm font-medium mb-1">
-                    {t("tasks", "dueDate")}
+                    {translations.dueDate}
                   </h4>
                   <p className="text-gray-600">
                     {new Date(task.due_date).toLocaleDateString()}
@@ -151,7 +160,7 @@ export function TaskCard({
               {task.category && (
                 <div>
                   <h4 className="text-sm font-medium mb-1">
-                    {t("tasks", "category")}
+                    {translations.category}
                   </h4>
                   <p className="text-gray-600">{task.category}</p>
                 </div>

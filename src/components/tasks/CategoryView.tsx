@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -22,7 +21,13 @@ export default function CategoryView({
   onEditTask = () => {},
   onDeleteTask = () => {},
 }: CategoryViewProps) {
-  const { t } = useLanguage();
+  // Use hardcoded English strings
+  const translations = {
+    enterCategoryName: "Enter category name",
+    addCategory: "Add Category",
+    noTasks: "No tasks yet",
+    uncategorized: "Uncategorized"
+  };
   const { user } = useAuth();
   const [categories, setCategories] = useState<{ id: string; name: string }[]>(
     [],
@@ -144,7 +149,7 @@ export default function CategoryView({
         <Input
           value={newCategory}
           onChange={(e) => setNewCategory(e.target.value)}
-          placeholder={t("tasks", "enterCategoryName")}
+          placeholder={translations.enterCategoryName}
           className="flex-1"
         />
         <Button
@@ -152,7 +157,7 @@ export default function CategoryView({
           className="bg-[#0f172a] text-white hover:bg-[#1e293b]"
         >
           <PlusCircle className="h-4 w-4 mr-2" />
-          {t("tasks", "addCategory")}
+          {translations.addCategory}
         </Button>
       </div>
 
@@ -192,7 +197,7 @@ export default function CategoryView({
                 ))}
                 {categoryTasks.length === 0 && (
                   <div className="text-sm text-gray-500 text-center py-4">
-                    {t("tasks", "noTasks")}
+                    {translations.noTasks}
                   </div>
                 )}
               </div>
@@ -203,7 +208,7 @@ export default function CategoryView({
         <Card className="p-4 bg-gray-50">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium">
-              {t("tasks", "uncategorized")}
+              {translations.uncategorized}
             </h3>
             <span className="text-sm text-gray-500">
               {uncategorizedTasks.length} tasks
@@ -221,7 +226,7 @@ export default function CategoryView({
             ))}
             {uncategorizedTasks.length === 0 && (
               <div className="text-sm text-gray-500 text-center py-4">
-                No tasks yet
+                {translations.noTasks}
               </div>
             )}
           </div>
