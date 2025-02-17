@@ -1,0 +1,15 @@
+[build]
+command = "npm run build"
+publishDirectory = "dist"
+
+[site]
+bucket = "./dist"
+
+[[routes]]
+pattern = "/*"
+handler = "index"
+
+[env.production]
+VITE_TEMPO = "false"
+VITE_SUPABASE_URL = "${VITE_SUPABASE_URL}"
+VITE_SUPABASE_ANON_KEY = "${VITE_SUPABASE_ANON_KEY}"

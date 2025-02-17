@@ -64,11 +64,11 @@ function App() {
   console.log("Current hostname:", window.location.hostname); // Debug log
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {scripts.header && (
-        <div dangerouslySetInnerHTML={{ __html: scripts.header }} />
-      )}
-      <LanguageProvider>
+    <LanguageProvider>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        {scripts.header && (
+          <div dangerouslySetInnerHTML={{ __html: scripts.header }} />
+        )}
         <AuthProvider>
           <Suspense
             fallback={
@@ -201,11 +201,11 @@ function App() {
           <Analytics />
           <Footer />
         </AuthProvider>
-      </LanguageProvider>
-      {scripts.footer && (
-        <div dangerouslySetInnerHTML={{ __html: scripts.footer }} />
-      )}
-    </div>
+        {scripts.footer && (
+          <div dangerouslySetInnerHTML={{ __html: scripts.footer }} />
+        )}
+      </div>
+    </LanguageProvider>
   );
 }
 

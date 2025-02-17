@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirecting...</title>
+    <script>
+      sessionStorage.setItem(
+        "path",
+        window.location.pathname + window.location.search,
+      );
+      window.location.href = "/";
+    </script>
+  </head>
+  <body>
+    Redirecting...
+  </body>
+</html>
