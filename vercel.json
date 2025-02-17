@@ -1,15 +1,1 @@
-{
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "crons": [
-    {
-      "path": "/api/notifications",
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/publish-scheduled",
-      "schedule": "* * * * *"
-    }
-  ]
-}
+{"rewrites":[{"source":"/(.*)","destination":"/index.html"}],"buildCommand":"VITE_TEMPO=false npm run build","outputDirectory":"dist","framework":"vite"}
