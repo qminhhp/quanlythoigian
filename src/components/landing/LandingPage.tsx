@@ -1,51 +1,8 @@
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
-
-interface Page {
-  title: string;
-  content: string;
-  meta_title: string;
-  meta_description: string;
-  meta_keywords: string;
-  og_image: string;
-  canonical_url: string;
-}
 
 export default function LandingPage() {
-  const [page, setPage] = useState<Page | null>(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const loadPage = async () => {
-      const { data } = await supabase
-        .from("pages")
-        .select("*")
-        .eq("slug", "home")
-        .eq("language", "en")
-        .eq("published", true)
-        .single();
-
-      if (data) {
-        setPage(data);
-
-        // Update meta tags
-        document.title = data.meta_title || data.title;
-        const metaDesc = document.querySelector('meta[name="description"]');
-        if (metaDesc) metaDesc.setAttribute("content", data.meta_description);
-        const metaKeywords = document.querySelector('meta[name="keywords"]');
-        if (metaKeywords)
-          metaKeywords.setAttribute("content", data.meta_keywords);
-        const ogImage = document.querySelector('meta[property="og:image"]');
-        if (ogImage) ogImage.setAttribute("content", data.og_image);
-        const canonical = document.querySelector('link[rel="canonical"]');
-        if (canonical) canonical.setAttribute("href", data.canonical_url);
-      }
-    };
-
-    loadPage();
-  }, []);
 
   const handleGetStarted = () => {
     navigate("/auth");
@@ -77,8 +34,6 @@ export default function LandingPage() {
     cta: "Ready to take control of your time?",
     startNow: "Start Now - It's Free",
   };
-
-  if (!page) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -142,12 +97,6 @@ export default function LandingPage() {
           </Button>
         </div>
       </div>
-
-      {/* Dynamic Content */}
-      <div
-        className="prose prose-lg max-w-none px-4 sm:px-6 lg:px-8 py-16"
-        dangerouslySetInnerHTML={{ __html: page.content }}
-      />
     </div>
   );
 }
