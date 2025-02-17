@@ -1,5 +1,6 @@
-import * as React from "react";
-import ReactDOM from "react-dom/client";
+import React from "react";
+import * as ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
 import App from "./App.tsx";
 import "./index.css";
 import { BrowserRouter } from "react-router-dom";
@@ -60,7 +61,8 @@ if (!root) {
   console.error("Root element not found");
 } else {
   try {
-    ReactDOM.createRoot(root).render(
+    const rootElement = ReactDOM.createRoot(root);
+    rootElement.render(
       <React.StrictMode>
         <ErrorBoundary>
           <BrowserRouter>

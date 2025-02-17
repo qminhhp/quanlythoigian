@@ -10,6 +10,9 @@ if (process.env.TEMPO === "true") {
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  resolve: {
+    dedupe: ["react", "react-dom"],
+  },
   build: {
     rollupOptions: {
       output: {
