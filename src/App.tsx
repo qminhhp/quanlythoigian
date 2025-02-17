@@ -11,7 +11,6 @@ import SuccessSignup from "./components/auth/SuccessSignup";
 import HabitView from "./components/habits/HabitView";
 import BadgeView from "./components/badges/BadgeView";
 import { Toaster } from "@/components/ui/toaster";
-import { Analytics } from "@vercel/analytics/react";
 import { AdminLayout } from "./components/admin/AdminLayout";
 import { ScriptsManager } from "./components/admin/ScriptsManager";
 import { BlogManager } from "./components/admin/BlogManager";
@@ -198,7 +197,6 @@ function App() {
             </Routes>
           </Suspense>
           <Toaster />
-          <Analytics />
           <Footer />
         </AuthProvider>
         {scripts.footer && (
