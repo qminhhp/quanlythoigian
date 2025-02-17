@@ -10,8 +10,12 @@ if (process.env.TEMPO === "true") {
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/',
   resolve: {
     dedupe: ["react", "react-dom"],
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
   },
   build: {
     rollupOptions: {
@@ -69,10 +73,5 @@ export default defineConfig({
   server: {
     // @ts-ignore
     allowedHosts: process.env.TEMPO === "true" ? true : undefined,
-  },
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
   },
 });

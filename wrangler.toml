@@ -1,13 +1,9 @@
 name = "conquerday"
 compatibility_date = "2024-02-17"
 
-[site]
-bucket = "./dist"
-
 [build]
 command = "npm run build"
+dist = "dist"
 
-[env.production]
-VITE_SUPABASE_URL = "https://yhcamkxphejjqlvnvebl.supabase.co"
-VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloY2Fta3hwaGVqanFsdm52ZWJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk2OTMzMzEsImV4cCI6MjA1NTI2OTMzMX0.jFZu8_QzmljGvJYXYZwc7J9iPe7VO3xcPAh7NW3Ut-E"
-VITE_TEMPO = "false"
+[site]
+bucket = "./dist"

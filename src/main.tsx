@@ -44,16 +44,21 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-// Import the dev tools and initialize them
-if (import.meta.env.VITE_TEMPO === "true") {
+// Import the dev tools and initialize them only in development
+if (import.meta.env.DEV && import.meta.env.VITE_TEMPO === "true") {
   import("tempo-devtools")
     .then(({ TempoDevtools }) => {
       TempoDevtools.init();
     })
-    .catch(console.error);
+    .catch((error) => {
+      console.error("Failed to initialize Tempo:", error);
+    });
 }
 
-console.log("Starting app initialization");
+console.log("Starting app initialization", {
+  env: import.meta.env.MODE,
+  root: !!document.getElementById("root")
+});
 const root = document.getElementById("root");
 
 if (!root) {

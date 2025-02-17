@@ -1,2 +1,0 @@
-{"rewrites":[{"source":"/(.*)","destination":"/index.html"}],"buildCommand":"npm run build",
-  "deployCommand": "wrangler deploy","outputDirectory":"dist","framework":"vite"}
