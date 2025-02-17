@@ -14,13 +14,18 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Create a vendors chunk for node_modules
+          // Create a single chunk for React and ReactDOM
+          if (
+            id.includes("node_modules/react/") ||
+            id.includes("node_modules/react-dom/")
+          ) {
+            return "react";
+          }
+
+          // Create a vendors chunk for other node_modules
           if (id.includes("node_modules")) {
             if (id.includes("@radix-ui")) {
               return "vendor-radix";
-            }
-            if (id.includes("react")) {
-              return "vendor-react";
             }
             if (id.includes("@supabase")) {
               return "vendor-supabase";
