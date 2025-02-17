@@ -1,15 +1,13 @@
-[build]
+[pages]
+compatibility_date = "2024-02-17"
+
+[pages.build]
 command = "npm run build"
-publishDirectory = "dist"
+dist = "dist"
 
-[site]
-bucket = "./dist"
-
-[[routes]]
+[[pages.routes]]
 pattern = "/*"
 handler = "index"
 
 [env.production]
 VITE_TEMPO = "false"
-VITE_SUPABASE_URL = "${VITE_SUPABASE_URL}"
-VITE_SUPABASE_ANON_KEY = "${VITE_SUPABASE_ANON_KEY}"
