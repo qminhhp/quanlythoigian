@@ -66,6 +66,13 @@ if (!root) {
 } else {
   try {
     const rootElement = ReactDOM.createRoot(root);
+    // Get the redirect path from sessionStorage if it exists
+    const redirectPath = sessionStorage.getItem("redirectPath");
+    if (redirectPath) {
+      sessionStorage.removeItem("redirectPath");
+      window.history.replaceState(null, "", redirectPath);
+    }
+
     rootElement.render(
       <React.StrictMode>
         <ErrorBoundary>

@@ -7,3 +7,13 @@ dist = "dist"
 
 [site]
 bucket = "./dist"
+
+[[redirects]]
+source = "/*"
+destination = "/index.html"
+status = 200
+
+[[redirects]]
+source = "/admin/*"
+destination = "/index.html"
+status = 200

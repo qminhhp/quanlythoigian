@@ -1,8 +1,16 @@
 {
   "version": 1,
   "include": ["/*"],
-  "exclude": ["/_assets/*"],
+  "exclude": [
+    "/_assets/*",
+    "/build/*",
+    "/static/*",
+    "/*.ico",
+    "/*.png",
+    "/*.svg"
+  ],
   "routes": [
+    { "src": "/admin.*", "dest": "/index.html" },
     { "src": "/*", "dest": "/index.html" }
   ]
 }

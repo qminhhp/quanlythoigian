@@ -4,11 +4,12 @@
     <meta charset="utf-8" />
     <title>Redirecting...</title>
     <script>
-      sessionStorage.setItem(
-        "path",
-        window.location.pathname + window.location.search,
-      );
-      window.location.href = "/";
+      // Store the attempted URL
+      const path = window.location.pathname + window.location.search;
+      sessionStorage.setItem("redirectPath", path);
+      
+      // Redirect to index.html which will handle the routing
+      window.location.href = "/index.html";
     </script>
   </head>
   <body>
