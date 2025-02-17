@@ -1,85 +1,66 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/auth";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export function Header() {
   const { user, signOut } = useAuth();
+  const { t, language } = useLanguage();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
+  if (!user) return null;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 flex">
-          <Link to="/" className="mr-6 flex items-center space-x-2">
-            <span className="font-bold">ConquerDay</span>
-          </Link>
-        </div>
-
-        <div className="flex items-center justify-between flex-1">
-          {user ? (
-            <nav className="flex items-center space-x-6 text-sm font-medium">
-              <Link
-                to="/home"
-                className="transition-colors hover:text-foreground/80 text-foreground"
-              >
-                Tasks
+    <header className="bg-white border-b">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex">
+            <div className="flex-shrink-0 flex items-center">
+              <Link to="/" className="text-xl font-bold">
+                {language === "vi" ? "Quản lý thời gian" : "ConquerDay"}
               </Link>
-              <Link
-                to="/habits"
-                className="transition-colors hover:text-foreground/80 text-foreground"
-              >
-                Habits
-              </Link>
-              <Link
-                to="/badges"
-                className="transition-colors hover:text-foreground/80 text-foreground"
-              >
-                Badges
-              </Link>
-              <Link
-                to="/blog"
-                className="transition-colors hover:text-foreground/80 text-foreground"
-              >
-                Blog
-              </Link>
+            </div>
+            <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
+              <Link to="/home">{t("nav", "tasks")}</Link>
+              <Link to="/habits">{t("nav", "habits")}</Link>
+              <Link to="/badges">{t("nav", "badges")}</Link>
+              <Link to="/blog">{t("nav", "blog")}</Link>
             </nav>
-          ) : (
-            <nav className="flex items-center space-x-6 text-sm font-medium">
-              <Link
-                to="/blog"
-                className="transition-colors hover:text-foreground/80 text-foreground"
-              >
-                Blog
-              </Link>
-            </nav>
-          )}
-
-          <nav className="flex items-center space-x-2">
-            {user ? (
-              <>
-                <Link to="/settings">
-                  <Button variant="ghost" className="px-4">
-                    Settings
-                  </Button>
-                </Link>
-                <Link to="/profile">
-                  <Button variant="ghost" className="px-4">
-                    Profile
-                  </Button>
-                </Link>
-                <Button
-                  variant="ghost"
-                  className="px-4"
-                  onClick={() => signOut()}
-                >
-                  Sign Out
+          </div>
+          <div className="flex items-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  {user.user_metadata?.displayName ||
+                    user.user_metadata?.username}
                 </Button>
-              </>
-            ) : (
-              <Link to="/auth">
-                <Button className="px-4">Get Started</Button>
-              </Link>
-            )}
-          </nav>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>
+                  <Link to="/settings">{t("nav", "settings")}</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link to="/profile">{t("nav", "profile")}</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut}>
+                  {t("nav", "signOut")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
     </header>

@@ -73,11 +73,21 @@ export default function MatrixView({
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {renderQuadrant("Important & Urgent", true, true, "bg-[#fff1f1]")}
-        {renderQuadrant("Important & Not Urgent", false, true, "bg-[#f1f6ff]")}
-        {renderQuadrant("Not Important & Urgent", true, false, "bg-[#fffbf1]")}
+        {renderQuadrant("Quan trọng & Khẩn cấp", true, true, "bg-[#fff1f1]")}
         {renderQuadrant(
-          "Not Important & Not Urgent",
+          "Quan trọng & Không khẩn cấp",
+          false,
+          true,
+          "bg-[#f1f6ff]",
+        )}
+        {renderQuadrant(
+          "Không quan trọng & Khẩn cấp",
+          true,
+          false,
+          "bg-[#fffbf1]",
+        )}
+        {renderQuadrant(
+          "Không quan trọng & Không khẩn cấp",
           false,
           false,
           "bg-[#f1fff6]",
