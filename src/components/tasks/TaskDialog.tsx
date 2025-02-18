@@ -52,7 +52,7 @@ export function TaskDialog({
     [],
   );
   useEffect(() => {
-    if (!user) return;
+    if (!user || !open) return;
 
     const fetchData = async () => {
       // Fetch categories
@@ -64,7 +64,7 @@ export function TaskDialog({
     };
 
     fetchData();
-  }, [user, task]);
+  }, [user, task, open]);
 
   const { register, handleSubmit, reset, setValue } = useForm<Partial<Task>>({
     defaultValues: {
