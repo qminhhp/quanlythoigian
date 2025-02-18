@@ -234,6 +234,30 @@ function TaskManager() {
     fetchTasks();
   };
 
+  const handleUpdateQuadrant = async (taskId: string, isUrgent: boolean, isImportant: boolean) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    // Optimistically update UI
+    setTasks(tasks.map(t => 
+      t.id === taskId ? { ...t, is_urgent: isUrgent, is_important: isImportant } : t
+    ));
+
+    // Update in background
+    const { error } = await supabase
+      .from("tasks")
+      .update({ is_urgent: isUrgent, is_important: isImportant })
+      .eq("id", taskId);
+
+    if (error) {
+      console.error("Error updating task quadrant:", error);
+      // Revert optimistic update on error
+      setTasks(tasks.map(t => 
+        t.id === taskId ? { ...t, is_urgent: task.is_urgent, is_important: task.is_important } : t
+      ));
+    }
+  };
+
   const addExperience = async (amount: number) => {
     if (!user) return;
 
@@ -338,6 +362,7 @@ function TaskManager() {
               setIsDialogOpen(true);
             }}
             onDeleteTask={handleDeleteTask}
+            onUpdateQuadrant={handleUpdateQuadrant}
           />
         </TabsContent>
         <TabsContent value="category">

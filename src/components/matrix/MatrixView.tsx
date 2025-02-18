@@ -7,6 +7,7 @@ interface MatrixViewProps {
   onTaskComplete: (taskId: string) => void;
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
+  onUpdateQuadrant?: (taskId: string, isUrgent: boolean, isImportant: boolean) => void;
 }
 
 export default function MatrixView({
@@ -14,6 +15,7 @@ export default function MatrixView({
   onTaskComplete,
   onEditTask,
   onDeleteTask,
+  onUpdateQuadrant,
 }: MatrixViewProps) {
   // Use hardcoded strings
   const translations = {
@@ -40,7 +42,24 @@ export default function MatrixView({
   ) => {
     const quadrantTasks = getTasksByQuadrant(isUrgent, isImportant);
     return (
-      <Card className={`${bgColor} rounded-lg overflow-hidden border-0`}>
+      <Card 
+        className={`${bgColor} rounded-lg overflow-hidden border-0`}
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.currentTarget.style.opacity = '0.7';
+        }}
+        onDragLeave={(e) => {
+          e.currentTarget.style.opacity = '1';
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          e.currentTarget.style.opacity = '1';
+          const taskId = e.dataTransfer.getData('taskId');
+          if (taskId && onUpdateQuadrant) {
+            onUpdateQuadrant(taskId, isUrgent, isImportant);
+          }
+        }}
+      >
         <div className="flex justify-between items-center p-3 border-b border-black/5">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-medium text-gray-900">{title}</h3>
@@ -64,6 +83,9 @@ export default function MatrixView({
                   onComplete={onTaskComplete}
                   onEdit={onEditTask}
                   onDelete={onDeleteTask}
+                  onDragEnd={onUpdateQuadrant ? (task, isUrgent, isImportant) => 
+                    onUpdateQuadrant(task.id, isUrgent, isImportant)
+                  : undefined}
                 />
               ))}
             </div>

@@ -20,6 +20,7 @@ interface TaskCardProps {
   onComplete: (taskId: string) => void;
   onEdit: (task: Task) => void;
   onDelete: (taskId: string) => void;
+  onDragEnd?: (task: Task, isUrgent: boolean, isImportant: boolean) => void;
 }
 
 export function TaskCard({
@@ -27,6 +28,7 @@ export function TaskCard({
   onComplete,
   onEdit,
   onDelete,
+  onDragEnd,
 }: TaskCardProps) {
   // Use hardcoded English strings
   const translations = {
@@ -42,7 +44,13 @@ export function TaskCard({
   const [isViewOpen, setIsViewOpen] = useState(false);
 
   return (
-    <div className="flex items-center justify-between gap-2 bg-white rounded-lg p-2 md:p-3 shadow-sm group">
+    <div 
+      draggable={!task.completed}
+      onDragStart={(e) => {
+        e.dataTransfer.setData('taskId', task.id);
+      }}
+      className="flex items-center justify-between gap-2 bg-white rounded-lg p-2 md:p-3 shadow-sm group cursor-move"
+    >
       <div className="flex items-center gap-2 flex-1">
         <div className="flex items-center gap-2">
           <input
