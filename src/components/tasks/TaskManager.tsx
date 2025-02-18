@@ -189,6 +189,12 @@ function TaskManager() {
 
     const newCompletedState = !task.completed;
 
+    // Optimistically update UI
+    setTasks(tasks.map(t => 
+      t.id === taskId ? { ...t, completed: newCompletedState } : t
+    ));
+
+    // Update in background
     const { error } = await supabase
       .from("tasks")
       .update({ completed: newCompletedState })
@@ -196,21 +202,25 @@ function TaskManager() {
 
     if (error) {
       console.error("Error completing task:", error);
+      // Revert optimistic update on error
+      setTasks(tasks.map(t => 
+        t.id === taskId ? { ...t, completed: !newCompletedState } : t
+      ));
       return;
     }
 
-    // Add experience points when completing a task (not when uncompleting)
+    // Process rewards in background
     if (newCompletedState) {
       const baseXP = 10;
       const urgencyBonus = task.is_urgent ? 5 : 0;
       const importanceBonus = task.is_important ? 5 : 0;
       const totalXP = baseXP + urgencyBonus + importanceBonus;
 
-      await addExperience(totalXP);
-      await checkForBadges();
+      Promise.all([
+        addExperience(totalXP),
+        checkForBadges()
+      ]).catch(console.error);
     }
-
-    fetchTasks();
   };
 
   const handleDeleteTask = async (taskId: string) => {
