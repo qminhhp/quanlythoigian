@@ -1,11 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { MobileNav } from "@/components/ui/mobile-nav";
 import { useAuth } from "@/lib/auth";
 
 export function Header() {
@@ -26,7 +21,8 @@ export function Header() {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <MobileNav isAdmin={false} />
+            <div className="flex-shrink-0 ml-2 md:ml-0">
               <Link to="/" className="text-xl font-bold whitespace-nowrap">
                 ConquerDay
               </Link>
@@ -48,34 +44,26 @@ export function Header() {
               ))}
             </nav>
           </div>
-          <div className="flex items-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="min-w-[100px] justify-start"
-                >
-                  {user.user_metadata?.displayName ||
-                    user.user_metadata?.username}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem className="w-full">
-                  <Link to="/settings" className="w-full">
-                    Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="w-full">
-                  <Link to="/profile" className="w-full">
-                    Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleSignOut} className="w-full">
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className="hidden md:flex md:items-center md:space-x-4">
+            <Link
+              to="/settings"
+              className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+            >
+              Settings
+            </Link>
+            <Link
+              to="/profile"
+              className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+            >
+              Profile
+            </Link>
+            <Button
+              variant="ghost"
+              onClick={handleSignOut}
+              className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+            >
+              Sign Out
+            </Button>
           </div>
         </div>
       </div>
