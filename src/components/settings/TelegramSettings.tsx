@@ -13,6 +13,7 @@ interface TelegramSettings {
   telegram_chat_id: string | null;
   notify_habits: boolean;
   notify_tasks: boolean;
+  notify_achievements: boolean;
 }
 
 export function TelegramSettings() {
@@ -22,6 +23,7 @@ export function TelegramSettings() {
     telegram_chat_id: null,
     notify_habits: true,
     notify_tasks: true,
+    notify_achievements: false,
   });
   const [chatId, setChatId] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
@@ -56,6 +58,7 @@ export function TelegramSettings() {
         telegram_chat_id: chatId,
         notify_habits: settings.notify_habits,
         notify_tasks: settings.notify_tasks,
+        notify_achievements: settings.notify_achievements,
       });
 
       if (error) {
@@ -83,7 +86,7 @@ export function TelegramSettings() {
     setIsVerifying(false);
   };
 
-  const handleToggle = async (field: "notify_habits" | "notify_tasks") => {
+  const handleToggle = async (field: "notify_habits" | "notify_tasks" | "notify_achievements") => {
     const newSettings = {
       ...settings,
       [field]: !settings[field],
@@ -94,6 +97,7 @@ export function TelegramSettings() {
       telegram_chat_id: settings.telegram_chat_id,
       notify_habits: newSettings.notify_habits,
       notify_tasks: newSettings.notify_tasks,
+      notify_achievements: newSettings.notify_achievements,
     });
 
     if (!error) {
@@ -168,6 +172,19 @@ export function TelegramSettings() {
               <Switch
                 checked={settings.notify_tasks}
                 onCheckedChange={() => handleToggle("notify_tasks")}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <div className="font-medium">Achievement Notifications</div>
+                <div className="text-sm text-gray-500">
+                  Receive notifications for badges and level ups
+                </div>
+              </div>
+              <Switch
+                checked={settings.notify_achievements}
+                onCheckedChange={() => handleToggle("notify_achievements")}
               />
             </div>
           </div>

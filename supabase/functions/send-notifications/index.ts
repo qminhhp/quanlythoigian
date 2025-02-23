@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 import { format, addDays } from "https://esm.sh/date-fns@2.30.0";
+import { handleBadgeEarned, handleLevelUp } from "./achievement-notifications.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,22 +9,26 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { hour } = await req.json();
-    console.log(`Processing notifications for hour: ${hour}`);
+    const { type, data } = await req.json();
+    console.log(`Processing notification: ${type}`);
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
-    // Send habit reminders at 6 AM
-    if (hour === 6) {
+    // Handle different notification types
+    if (type === "badge_earned") {
+      await handleBadgeEarned(supabaseClient, data);
+    } else if (type === "level_up") {
+      await handleLevelUp(supabaseClient, data);
+    } else if (type === "daily_reminder" && data.hour === 6) {
       console.log("Sending habit reminders...");
       const { data: habitSettings } = await supabaseClient
         .from("telegram_settings")
@@ -50,7 +55,7 @@ serve(async (req) => {
     }
 
     // Send task reminders at 22:00 (10 PM)
-    if (hour === 22) {
+    if (type === "daily_reminder" && data.hour === 22) {
       console.log("Sending task reminders...");
       const tomorrow = addDays(new Date(), 1);
       const tomorrowStr = format(tomorrow, "yyyy-MM-dd");
