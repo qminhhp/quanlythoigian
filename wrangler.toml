@@ -1,19 +1,10 @@
-name = "conquerday"
+name = "conquerday-notifications"
+main = "./functions/notifications.ts"
 compatibility_date = "2024-02-17"
 
-[build]
-command = "npm run build"
-dist = "dist"
+[vars]
+SUPABASE_URL = "https://yhcamkxphejjqlvnvebl.supabase.co"
+TELEGRAM_BOT_TOKEN = "8118895697:AAG3XziOOuaN-fVyvCqrTZ169ms0BsSp64Q"
 
-[site]
-bucket = "./dist"
-
-[[redirects]]
-source = "/*"
-destination = "/index.html"
-status = 200
-
-[[redirects]]
-source = "/admin/*"
-destination = "/index.html"
-status = 200
+[triggers]
+crons = ["* * * * *"] # Run every minute to handle notifications based on user timezones
