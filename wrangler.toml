@@ -1,4 +1,4 @@
-name = "conquerday"
+name = "conquerday-notifications"
 main = "./functions/notifications.ts"
 compatibility_date = "2024-02-17"
 
@@ -8,3 +8,7 @@ TELEGRAM_BOT_TOKEN = "8118895697:AAG3XziOOuaN-fVyvCqrTZ169ms0BsSp64Q"
 
 [triggers]
 crons = ["* * * * *"] # Run every minute to handle notifications based on user timezones
+
+[observability]
+enabled = true
+head_sampling_rate = 1 # Log 100% of requests for testing

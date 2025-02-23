@@ -24,6 +24,12 @@ async function sendTelegramMessage(botToken: string, chatId: string, message: st
 }
 
 export default {
+  async fetch() {
+    return new Response("Notification Worker Running", {
+      headers: { "content-type": "text/plain" },
+    });
+  },
+
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
     try {
       const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_KEY);
