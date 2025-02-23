@@ -11,15 +11,17 @@ interface Category {
   slug: string;
 }
 
-interface RecentPost {
+interface BlogPost {
   slug: string;
   title: string;
+  status: string;
+  published_at: string;
 }
 
 export function BlogLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [recentPosts, setRecentPosts] = useState<RecentPost[]>([]);
+  const [recentPosts, setRecentPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
     loadSidebarData();
@@ -28,17 +30,18 @@ export function BlogLayout({ children }: { children: React.ReactNode }) {
   const loadSidebarData = async () => {
     // Load categories
     const { data: categoriesData } = await supabase
-      .from("blog_categories")
-      .select("*");
+      .from<Category>("blog_categories")
+      .get();
     if (categoriesData) setCategories(categoriesData);
 
     // Load recent posts
     const { data: postsData } = await supabase
-      .from("blog_posts")
+      .from<BlogPost>("blog_posts")
       .select("slug, title")
-      .eq("status", "published")
-      .order("published_at", { ascending: false })
-      .limit(5);
+      .where("status", "published")
+      .orderBy("published_at", false)
+      .limit(5)
+      .get();
     if (postsData) setRecentPosts(postsData);
   };
 

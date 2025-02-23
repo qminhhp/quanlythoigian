@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/db";
 import { verifyTelegramChat } from "@/lib/telegram";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { MessageCircle } from "lucide-react";
 
 interface TelegramSettings {
+  user_id: string;
   telegram_chat_id: string | null;
   notify_habits: boolean;
   notify_tasks: boolean;
@@ -20,6 +21,7 @@ export function TelegramSettings() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [settings, setSettings] = useState<TelegramSettings>({
+    user_id: "",
     telegram_chat_id: null,
     notify_habits: true,
     notify_tasks: true,
@@ -35,10 +37,9 @@ export function TelegramSettings() {
 
   const loadSettings = async () => {
     const { data } = await supabase
-      .from("telegram_settings")
-      .select("*")
-      .eq("user_id", user?.id)
-      .single();
+      .from<TelegramSettings>("telegram_settings")
+      .where("user_id", user?.id)
+      .first();
 
     if (data) {
       setSettings(data);
@@ -53,7 +54,7 @@ export function TelegramSettings() {
     const isValid = await verifyTelegramChat(chatId);
 
     if (isValid) {
-      const { error } = await supabase.from("telegram_settings").upsert({
+      const { error } = await supabase.from("telegram_settings").insert({
         user_id: user?.id,
         telegram_chat_id: chatId,
         notify_habits: settings.notify_habits,
@@ -92,7 +93,7 @@ export function TelegramSettings() {
       [field]: !settings[field],
     };
 
-    const { error } = await supabase.from("telegram_settings").upsert({
+    const { error } = await supabase.from("telegram_settings").insert({
       user_id: user?.id,
       telegram_chat_id: settings.telegram_chat_id,
       notify_habits: newSettings.notify_habits,

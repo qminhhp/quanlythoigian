@@ -19,11 +19,13 @@ interface Badge {
 interface UserBadge {
   badge_id: string;
   earned_at: string;
+  user_id: string;
 }
 
 interface UserLevel {
   level: number;
   experience: number;
+  user_id: string;
 }
 
 const ICONS: Record<string, React.ReactNode> = {
@@ -65,6 +67,7 @@ export default function BadgeView() {
   const [userLevel, setUserLevel] = useState<UserLevel>({
     level: 1,
     experience: 0,
+    user_id: "",
   });
 
   useEffect(() => {
@@ -73,22 +76,21 @@ export default function BadgeView() {
     const fetchData = async () => {
       // Fetch all badges
       const { data: badgesData } = await supabase
-        .from("badges")
-        .select("*")
-        .order("requirement_value", { ascending: true });
+        .from<Badge>("badges")
+        .orderBy("requirement_value", true)
+        .get();
 
       // Fetch user's earned badges
       const { data: userBadgesData } = await supabase
-        .from("user_badges")
-        .select("*")
-        .eq("user_id", user.id);
+        .from<UserBadge>("user_badges")
+        .where("user_id", user.id)
+        .get();
 
       // Fetch user's level
       const { data: userLevelData } = await supabase
-        .from("user_levels")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
+        .from<UserLevel>("user_levels")
+        .where("user_id", user.id)
+        .first();
 
       setBadges(badgesData || []);
       setUserBadges(userBadgesData || []);

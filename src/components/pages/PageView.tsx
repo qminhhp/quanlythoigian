@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Header } from "@/components/ui/header";
 
 interface Page {
+  id: string;
   title: string;
   content: string;
   meta_title: string;
@@ -12,6 +13,9 @@ interface Page {
   meta_keywords: string;
   og_image: string;
   canonical_url: string;
+  slug: string;
+  language: string;
+  published: boolean;
 }
 
 export default function PageView() {
@@ -22,12 +26,11 @@ export default function PageView() {
   useEffect(() => {
     const loadPage = async () => {
       const { data } = await supabase
-        .from("pages")
-        .select("*")
-        .eq("slug", slug)
-        .eq("language", language)
-        .eq("published", true)
-        .single();
+        .from<Page>("pages")
+        .where("slug", slug)
+        .where("language", language)
+        .where("published", true)
+        .first();
 
       if (data) {
         setPage(data);

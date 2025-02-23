@@ -5,6 +5,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 
+interface Script {
+  type: "header" | "footer";
+  content: string;
+}
+
 export function ScriptsManager() {
   const { toast } = useToast();
   const [headerScript, setHeaderScript] = useState("");
@@ -15,7 +20,7 @@ export function ScriptsManager() {
   }, []);
 
   const loadScripts = async () => {
-    const { data: scripts } = await supabase.from("scripts").select("*");
+    const { data: scripts } = await supabase.from<Script>("scripts").get();
 
     if (scripts) {
       const header = scripts.find((s) => s.type === "header");
@@ -27,12 +32,12 @@ export function ScriptsManager() {
 
   const saveScripts = async () => {
     const { error: headerError } = await supabase
-      .from("scripts")
-      .upsert({ type: "header", content: headerScript });
+      .from<Script>("scripts")
+      .insert({ type: "header", content: headerScript });
 
     const { error: footerError } = await supabase
-      .from("scripts")
-      .upsert({ type: "footer", content: footerScript });
+      .from<Script>("scripts")
+      .insert({ type: "footer", content: footerScript });
 
     if (headerError || footerError) {
       toast({

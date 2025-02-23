@@ -3,6 +3,12 @@ import { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { AuthContext, UserMetadata, checkIsAdmin } from "@/lib/auth";
 
+interface UserLevel {
+  user_id: string;
+  level: number;
+  experience: number;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   console.log("AuthProvider rendering");
   const [user, setUser] = useState<User | null>(null);
@@ -72,10 +78,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Ensure user_levels record exists
     if (data.user) {
       const { data: levelData } = await supabase
-        .from("user_levels")
-        .select("*")
-        .eq("user_id", data.user.id)
-        .single();
+        .from<UserLevel>("user_levels")
+        .where("user_id", data.user.id)
+        .first();
 
       if (!levelData) {
         const { error: levelsError } = await supabase

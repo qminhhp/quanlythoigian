@@ -53,7 +53,7 @@ export function PageManager() {
   }, []);
 
   const loadPages = async () => {
-    const { data } = await supabase.from("pages").select("*");
+    const { data } = await supabase.from("pages").get();
     if (data) setPages(data);
   };
 
@@ -67,8 +67,11 @@ export function PageManager() {
     };
 
     const { error } = selectedPage
-      ? await supabase.from("pages").update(pageData).eq("id", selectedPage.id)
-      : await supabase.from("pages").insert([pageData]);
+      ? await supabase
+          .from("pages")
+          .where("id", selectedPage.id)
+          .update(pageData)
+      : await supabase.from("pages").insert(pageData);
 
     if (error) {
       toast({
@@ -115,7 +118,7 @@ export function PageManager() {
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("pages").delete().eq("id", id);
+    const { error } = await supabase.from("pages").where("id", id).delete();
 
     if (error) {
       toast({

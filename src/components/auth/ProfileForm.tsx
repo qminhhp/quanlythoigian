@@ -45,6 +45,13 @@ const TIMEZONES = [
   { value: "Etc/GMT-12", label: "UTC +12 Auckland, Wellington, Fiji" },
 ];
 
+interface Profile {
+  id: string;
+  display_name: string;
+  phone: string;
+  timezone: string;
+}
+
 export function ProfileForm() {
   const { user, updateProfile } = useAuth();
   const { toast } = useToast();
@@ -69,19 +76,13 @@ export function ProfileForm() {
 
     // Load data from profiles table
     const loadProfile = async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (error) {
-        console.error("Error loading profile:", error);
-        return;
-      }
+      const { data } = await supabase
+        .from<Profile>("profiles")
+        .where("id", user.id)
+        .first();
 
       if (data) {
-        setValue("username", data.username);
+        setValue("username", data.display_name);
         setValue("displayName", data.display_name);
         setValue("phone", data.phone);
         setValue("timezone", data.timezone);
@@ -95,16 +96,11 @@ export function ProfileForm() {
     if (!user) return;
 
     const fetchAssignedTasks = async () => {
-      const { data, error } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("assignee_id", user.id)
-        .eq("completed", false);
-
-      if (error) {
-        console.error("Error fetching assigned tasks:", error);
-        return;
-      }
+      const { data } = await supabase
+        .from<Task>("tasks")
+        .where("assignee_id", user.id)
+        .where("completed", false)
+        .get();
 
       setAssignedTasks(data || []);
     };
@@ -112,22 +108,15 @@ export function ProfileForm() {
     fetchAssignedTasks();
 
     // Subscribe to changes
-    const subscription = supabase
-      .channel("tasks")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "tasks",
-          filter: `assignee_id=eq.${user.id}`,
-        },
-        fetchAssignedTasks,
-      )
-      .subscribe();
+    const channel = supabase.channel("tasks");
+    channel.subscribe((payload) => {
+      if (payload.new?.assignee_id === user.id) {
+        fetchAssignedTasks();
+      }
+    });
 
     return () => {
-      subscription.unsubscribe();
+      channel.unsubscribe();
     };
   }, [user]);
 
@@ -140,7 +129,7 @@ export function ProfileForm() {
       });
       // Update the profile table as well
       if (user) {
-        const { error } = await supabase.from("profiles").upsert({
+        const { error } = await supabase.from<Profile>("profiles").insert({
           id: user.id,
           display_name: data.displayName,
           phone: data.phone,
@@ -188,9 +177,9 @@ export function ProfileForm() {
 
   const handleTaskComplete = async (taskId: string) => {
     const { error } = await supabase
-      .from("tasks")
-      .update({ completed: true })
-      .eq("id", taskId);
+      .from<Task>("tasks")
+      .where("id", taskId)
+      .update({ completed: true });
 
     if (error) {
       console.error("Error completing task:", error);

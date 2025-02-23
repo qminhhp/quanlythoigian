@@ -8,6 +8,12 @@ import { PlusCircle, Trash2 } from "lucide-react";
 import { TaskCard } from "./TaskCard";
 import { Task } from "@/types/task";
 
+interface Category {
+  id: string;
+  name: string;
+  user_id: string;
+}
+
 interface CategoryViewProps {
   tasks?: Task[];
   onTaskComplete?: (taskId: string) => void;
@@ -29,9 +35,7 @@ export default function CategoryView({
     uncategorized: "Uncategorized"
   };
   const { user } = useAuth();
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
-    [],
-  );
+  const [categories, setCategories] = useState<Category[]>([]);
   const [newCategory, setNewCategory] = useState("");
 
   useEffect(() => {
@@ -44,9 +48,10 @@ export default function CategoryView({
 
     // First check if we have any categories
     const { data, error } = await supabase
-      .from("categories")
+      .from<Category>("categories")
       .select("id, name")
-      .eq("user_id", user.id);
+      .where("user_id", user.id)
+      .get();
 
     if (error) {
       console.error("Error fetching categories:", error);
@@ -67,7 +72,7 @@ export default function CategoryView({
         defaultCategories.map((name) => ({
           user_id: user.id,
           name,
-        })),
+        }))
       );
 
       if (insertError) {
@@ -77,9 +82,10 @@ export default function CategoryView({
 
       // Fetch again after creating defaults
       const { data: newData } = await supabase
-        .from("categories")
+        .from<Category>("categories")
         .select("id, name")
-        .eq("user_id", user.id);
+        .where("user_id", user.id)
+        .get();
 
       setCategories(newData || []);
     } else {
@@ -96,9 +102,9 @@ export default function CategoryView({
 
     const { error: taskUpdateError } = await supabase
       .from("tasks")
-      .update({ category: "uncategorized" })
-      .eq("user_id", user.id)
-      .eq("category", category.name);
+      .where("user_id", user.id)
+      .where("category", category.name)
+      .update({ category: "uncategorized" });
 
     if (taskUpdateError) {
       console.error("Error updating tasks:", taskUpdateError);
@@ -108,8 +114,8 @@ export default function CategoryView({
     // Then delete the category
     const { error } = await supabase
       .from("categories")
-      .delete()
-      .eq("id", categoryId);
+      .where("id", categoryId)
+      .delete();
 
     if (error) {
       console.error("Error deleting category:", error);
@@ -122,9 +128,10 @@ export default function CategoryView({
   const handleAddCategory = async () => {
     if (!newCategory.trim() || !user) return;
 
-    const { error } = await supabase
-      .from("categories")
-      .insert([{ name: newCategory, user_id: user.id }]);
+    const { error } = await supabase.from("categories").insert({
+      name: newCategory,
+      user_id: user.id
+    });
 
     if (!error) {
       setNewCategory("");

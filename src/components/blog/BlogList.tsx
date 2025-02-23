@@ -9,6 +9,9 @@ interface BlogPost {
   slug: string;
   excerpt: string;
   published_at: string;
+  blog_categories: {
+    slug: string;
+  };
 }
 
 export function BlogList() {
@@ -19,18 +22,16 @@ export function BlogList() {
   useEffect(() => {
     const loadPosts = async () => {
       let query = supabase
-        .from("blog_posts")
-        .select(
-          "id, title, slug, excerpt, published_at, blog_categories!inner(slug)",
-        )
-        .eq("language", language)
-        .eq("status", "published");
+        .from<BlogPost>("blog_posts")
+        .select("id, title, slug, excerpt, published_at, blog_categories(slug)")
+        .where("language", language)
+        .where("status", "published");
 
       if (category) {
-        query = query.eq("blog_categories.slug", category);
+        query = query.where("blog_categories.slug", category);
       }
 
-      const { data } = await query.order("published_at", { ascending: false });
+      const { data } = await query.orderBy("published_at", false).get();
 
       if (data) setPosts(data);
     };

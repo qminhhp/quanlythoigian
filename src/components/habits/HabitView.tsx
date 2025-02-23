@@ -9,6 +9,31 @@ import { HabitDialog } from "./HabitDialog";
 import { Habit } from "@/types/task";
 import { sendTelegramMessage } from "@/lib/telegram";
 
+interface UserLevel {
+  user_id: string;
+  level: number;
+  experience: number;
+  updated_at?: string;
+}
+
+interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  requirement_type: string;
+  requirement_value: number;
+}
+
+interface UserBadge {
+  user_id: string;
+  badge_id: string;
+}
+
+interface TelegramSettings {
+  user_id: string;
+  telegram_chat_id: string;
+}
+
 export default function HabitView() {
   const { user } = useAuth();
   const [habits, setHabits] = useState<Habit[]>([]);
@@ -22,9 +47,9 @@ export default function HabitView() {
 
   const fetchHabits = async () => {
     const { data, error } = await supabase
-      .from("habits")
-      .select("*")
-      .eq("user_id", user?.id);
+      .from<Habit>("habits")
+      .where("user_id", user?.id)
+      .get();
 
     if (error) {
       console.error("Error fetching habits:", error);
@@ -37,16 +62,14 @@ export default function HabitView() {
   const handleCreateHabit = async (data: Partial<Habit>) => {
     if (!user) return;
 
-    const { error } = await supabase.from("habits").insert([
-      {
-        user_id: user.id,
-        title: data.title,
-        description: data.description,
-        frequency: data.frequency || "daily",
-        streak: 0,
-        longest_streak: 0,
-      },
-    ]);
+    const { error } = await supabase.from("habits").insert({
+      user_id: user.id,
+      title: data.title,
+      description: data.description,
+      frequency: data.frequency || "daily",
+      streak: 0,
+      longest_streak: 0,
+    });
 
     if (error) {
       console.error("Error creating habit:", error);
@@ -60,10 +83,9 @@ export default function HabitView() {
     if (!user) return;
 
     const { data: levelData } = await supabase
-      .from("user_levels")
-      .select("*")
-      .eq("user_id", user.id)
-      .single();
+      .from<UserLevel>("user_levels")
+      .where("user_id", user.id)
+      .first();
 
     if (!levelData) {
       await supabase.from("user_levels").insert({
@@ -79,12 +101,12 @@ export default function HabitView() {
 
     const { error } = await supabase
       .from("user_levels")
+      .where("user_id", user.id)
       .update({
         experience: newExperience,
         level: newLevel,
         updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", user.id);
+      });
 
     if (error) {
       console.error("Error updating experience:", error);
@@ -95,10 +117,9 @@ export default function HabitView() {
     if (newLevel > levelData.level) {
       // Send telegram notification for level up
       const { data: telegramSettings } = await supabase
-        .from("telegram_settings")
-        .select("telegram_chat_id")
-        .eq("user_id", user.id)
-        .single();
+        .from<TelegramSettings>("telegram_settings")
+        .where("user_id", user.id)
+        .first();
 
       if (telegramSettings?.telegram_chat_id) {
         const message = `🎉 Level Up! You've reached level ${newLevel}!\n\nKeep up the great work! 💪`;
@@ -111,15 +132,15 @@ export default function HabitView() {
     if (!user) return;
 
     // Get all badges
-    const { data: badges } = await supabase.from("badges").select("*");
+    const { data: badges } = await supabase.from<Badge>("badges").get();
 
     if (!badges) return;
 
     // Get user's earned badges
     const { data: userBadges } = await supabase
-      .from("user_badges")
-      .select("badge_id")
-      .eq("user_id", user.id);
+      .from<UserBadge>("user_badges")
+      .where("user_id", user.id)
+      .get();
 
     const earnedBadgeIds = new Set(userBadges?.map((ub) => ub.badge_id));
 
@@ -138,10 +159,9 @@ export default function HabitView() {
 
         // Send telegram notification for badge
         const { data: telegramSettings } = await supabase
-          .from("telegram_settings")
-          .select("telegram_chat_id")
-          .eq("user_id", user.id)
-          .single();
+          .from<TelegramSettings>("telegram_settings")
+          .where("user_id", user.id)
+          .first();
 
         if (telegramSettings?.telegram_chat_id) {
           const message = `🏆 Congratulations! You've earned the "${badge.name}" badge!\n\n${badge.description}`;
@@ -168,11 +188,11 @@ export default function HabitView() {
       // Undo completion
       const { error } = await supabase
         .from("habits")
+        .where("id", habitId)
         .update({
           last_completed: null,
           streak: Math.max(0, habit.streak - 1),
-        })
-        .eq("id", habitId);
+        });
 
       if (error) {
         console.error("Error undoing habit completion:", error);
@@ -192,12 +212,12 @@ export default function HabitView() {
 
       const { error } = await supabase
         .from("habits")
+        .where("id", habitId)
         .update({
           last_completed: today.toISOString(),
           streak: newStreak,
           longest_streak: Math.max(newStreak, habit.longest_streak),
-        })
-        .eq("id", habitId);
+        });
 
       if (error) {
         console.error("Error completing habit:", error);
@@ -220,8 +240,8 @@ export default function HabitView() {
   const handleArchive = async (habitId: string) => {
     const { error } = await supabase
       .from("habits")
-      .update({ archived_at: new Date().toISOString() })
-      .eq("id", habitId);
+      .where("id", habitId)
+      .update({ archived_at: new Date().toISOString() });
 
     if (error) {
       console.error("Error archiving habit:", error);
@@ -234,8 +254,8 @@ export default function HabitView() {
   const handleUnarchive = async (habitId: string) => {
     const { error } = await supabase
       .from("habits")
-      .update({ archived_at: null })
-      .eq("id", habitId);
+      .where("id", habitId)
+      .update({ archived_at: null });
 
     if (error) {
       console.error("Error unarchiving habit:", error);

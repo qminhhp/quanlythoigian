@@ -3,14 +3,18 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import { tempo } from "tempo-devtools/dist/vite";
 
-const conditionalPlugins = [];
+const conditionalPlugins: [string, Record<string, any>][] = [];
 if (process.env.TEMPO === "true") {
-  conditionalPlugins.push(["tempo-devtools/swc", {}]);
+  conditionalPlugins.push(["tempo-devtools/swc", {} as Record<string, any>]);
 }
 
 // https://vitejs.dev/config/
 export default defineConfig({
   base: '/',
+  define: {
+    'import.meta.env.D1_API_URL': JSON.stringify(process.env.D1_API_URL || 'https://quanlythoigian-d1.vuquangminhseo.workers.dev'),
+    'import.meta.env.TELEGRAM_BOT_TOKEN': JSON.stringify(process.env.TELEGRAM_BOT_TOKEN)
+  },
   resolve: {
     dedupe: ["react", "react-dom"],
     alias: {

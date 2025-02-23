@@ -3,13 +3,6 @@ main = "src/index.ts"
 compatibility_date = "2024-02-23"
 
 [[d1_databases]]
-binding = "DB"
+binding = "DB" # Tên biến để truy cập DB trong code
 database_name = "quanlythoigian-d1"
 database_id = "a0906572-18dc-4b2e-9757-456aa93c7633"
-
-[build]
-command = "npm run build"
-dist = "dist"
-
-[site]
-bucket = "./dist"

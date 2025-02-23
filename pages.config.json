@@ -1,0 +1,13 @@
+{
+  "name": "conquerday",
+  "build": {
+    "command": "npm run build",
+    "dist": "dist"
+  },
+  "env": {
+    "production": {
+      "D1_API_URL": "https://quanlythoigian-d1.vuquangminhseo.workers.dev",
+      "TELEGRAM_BOT_TOKEN": "7701128689:AAGUGB-vhJYSPNSgKogHfy8cqiWe6iUOH_U"
+    }
+  }
+}

@@ -36,9 +36,9 @@ function TaskManager() {
 
   const fetchTasks = async () => {
     const { data, error } = await supabase
-      .from("tasks")
-      .select("*")
-      .eq("user_id", user?.id);
+      .from<Task>("tasks")
+      .where("user_id", user?.id)
+      .get();
 
     if (error) {
       console.error("Error fetching tasks:", error);
@@ -53,9 +53,8 @@ function TaskManager() {
 
     const { data: levelData } = await supabase
       .from("user_levels")
-      .select("*")
-      .eq("user_id", user.id)
-      .single();
+      .where("user_id", user.id)
+      .first();
 
     if (levelData) {
       setUserProgress((prev) => ({
@@ -69,19 +68,17 @@ function TaskManager() {
   const handleCreateTask = async (data: Partial<Task>) => {
     if (!user) return;
 
-    const { error } = await supabase.from("tasks").insert([
-      {
-        user_id: user.id,
-        title: data.title,
-        description: data.description,
-        due_date: data.due_date,
-        repeat_frequency: data.repeat_frequency || "none",
-        is_urgent: data.is_urgent || false,
-        is_important: data.is_important || false,
-        category: data.category || "uncategorized",
-        completed: false,
-      },
-    ]);
+    const { error } = await supabase.from("tasks").insert({
+      user_id: user.id,
+      title: data.title,
+      description: data.description,
+      due_date: data.due_date,
+      repeat_frequency: data.repeat_frequency || "none",
+      is_urgent: data.is_urgent || false,
+      is_important: data.is_important || false,
+      category: data.category || "uncategorized",
+      completed: false,
+    });
 
     if (error) {
       console.error("Error creating task:", error);
@@ -96,6 +93,7 @@ function TaskManager() {
 
     const { error } = await supabase
       .from("tasks")
+      .where("id", editingTask.id)
       .update({
         title: data.title,
         description: data.description,
@@ -104,8 +102,7 @@ function TaskManager() {
         is_urgent: data.is_urgent,
         is_important: data.is_important,
         category: data.category,
-      })
-      .eq("id", editingTask.id);
+      });
 
     if (error) {
       console.error("Error updating task:", error);
@@ -120,32 +117,36 @@ function TaskManager() {
     if (!user) return;
 
     // Get all badges
-    const { data: badges } = await supabase.from("badges").select("*");
+    const { data: badges } = await supabase.from("badges").get();
 
     if (!badges) return;
 
     // Get user's earned badges
     const { data: userBadges } = await supabase
       .from("user_badges")
-      .select("badge_id")
-      .eq("user_id", user.id);
+      .where("user_id", user.id)
+      .get();
 
     const earnedBadgeIds = new Set(userBadges?.map((ub) => ub.badge_id));
 
     // Get completed tasks count
-    const { count: tasksCompleted } = await supabase
+    const { data: tasksCompletedData } = await supabase
       .from("tasks")
-      .select("*", { count: "exact" })
-      .eq("user_id", user.id)
-      .eq("completed", true);
+      .where("user_id", user.id)
+      .where("completed", true)
+      .count();
+
+    const tasksCompleted = tasksCompletedData?.count || 0;
 
     // Get important tasks completed count
-    const { count: importantTasksCompleted } = await supabase
+    const { data: importantTasksCompletedData } = await supabase
       .from("tasks")
-      .select("*", { count: "exact" })
-      .eq("user_id", user.id)
-      .eq("completed", true)
-      .eq("is_important", true);
+      .where("user_id", user.id)
+      .where("completed", true)
+      .where("is_important", true)
+      .count();
+
+    const importantTasksCompleted = importantTasksCompletedData?.count || 0;
 
     // Check each badge
     for (const badge of badges) {
@@ -171,9 +172,8 @@ function TaskManager() {
         // Send telegram notification for badge
         const { data: telegramSettings } = await supabase
           .from("telegram_settings")
-          .select("telegram_chat_id")
-          .eq("user_id", user.id)
-          .single();
+          .where("user_id", user.id)
+          .first();
 
         if (telegramSettings?.telegram_chat_id) {
           const message = `🏆 Congratulations! You've earned the "${badge.name}" badge!\n\n${badge.description}`;
@@ -197,8 +197,8 @@ function TaskManager() {
     // Update in background
     const { error } = await supabase
       .from("tasks")
-      .update({ completed: newCompletedState })
-      .eq("id", taskId);
+      .where("id", taskId)
+      .update({ completed: newCompletedState });
 
     if (error) {
       console.error("Error completing task:", error);
@@ -224,7 +224,10 @@ function TaskManager() {
   };
 
   const handleDeleteTask = async (taskId: string) => {
-    const { error } = await supabase.from("tasks").delete().eq("id", taskId);
+    const { error } = await supabase
+      .from("tasks")
+      .where("id", taskId)
+      .delete();
 
     if (error) {
       console.error("Error deleting task:", error);
@@ -246,8 +249,8 @@ function TaskManager() {
     // Update in background
     const { error } = await supabase
       .from("tasks")
-      .update({ is_urgent: isUrgent, is_important: isImportant })
-      .eq("id", taskId);
+      .where("id", taskId)
+      .update({ is_urgent: isUrgent, is_important: isImportant });
 
     if (error) {
       console.error("Error updating task quadrant:", error);
@@ -265,9 +268,8 @@ function TaskManager() {
       // First try to update existing record
       const { data: levelData, error: selectError } = await supabase
         .from("user_levels")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
+        .where("user_id", user.id)
+        .first();
 
       if (selectError || !levelData) {
         // If no record exists, create one
@@ -293,12 +295,12 @@ function TaskManager() {
 
       const { error: updateError } = await supabase
         .from("user_levels")
+        .where("user_id", user.id)
         .update({
           experience: newExperience,
           level: newLevel,
           updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", user.id);
+        });
 
       if (updateError) throw updateError;
 
@@ -307,9 +309,8 @@ function TaskManager() {
         // Send telegram notification for level up
         const { data: telegramSettings } = await supabase
           .from("telegram_settings")
-          .select("telegram_chat_id")
-          .eq("user_id", user.id)
-          .single();
+          .where("user_id", user.id)
+          .first();
 
         if (telegramSettings?.telegram_chat_id) {
           const message = `🎉 Level Up! You've reached level ${newLevel}!\n\nKeep up the great work! 💪`;

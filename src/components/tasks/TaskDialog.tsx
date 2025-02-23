@@ -23,6 +23,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+interface Category {
+  id: string;
+  name: string;
+  user_id: string;
+}
+
 interface TaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -48,18 +54,18 @@ export function TaskDialog({
     category: "Category"
   };
   const { user } = useAuth();
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
-    [],
-  );
+  const [categories, setCategories] = useState<Category[]>([]);
+
   useEffect(() => {
     if (!user || !open) return;
 
     const fetchData = async () => {
       // Fetch categories
       const { data: categoriesData } = await supabase
-        .from("categories")
+        .from<Category>("categories")
         .select("id, name")
-        .eq("user_id", user.id);
+        .where("user_id", user.id)
+        .get();
       setCategories(categoriesData || []);
     };
 
@@ -78,7 +84,6 @@ export function TaskDialog({
       is_urgent: false,
       is_important: false,
       repeat_frequency: "none" as const,
-
       category: "uncategorized",
     },
   });
@@ -91,7 +96,6 @@ export function TaskDialog({
       setValue("is_urgent", task.is_urgent);
       setValue("is_important", task.is_important);
       setValue("repeat_frequency", task.repeat_frequency);
-
       setValue("category", task.category || "uncategorized");
     }
   }, [task, setValue]);

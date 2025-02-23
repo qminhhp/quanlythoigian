@@ -35,6 +35,9 @@ interface BlogPost {
   canonical_url: string;
   category_id?: string;
   scheduled_for?: string;
+  blog_categories?: {
+    name: string;
+  };
 }
 
 export function BlogManager() {
@@ -67,14 +70,15 @@ export function BlogManager() {
   }, []);
 
   const loadCategories = async () => {
-    const { data } = await supabase.from("blog_categories").select("*");
+    const { data } = await supabase.from<Category>("blog_categories").get();
     if (data) setCategories(data);
   };
 
   const loadPosts = async () => {
     const { data } = await supabase
-      .from("blog_posts")
-      .select("*, blog_categories(name)");
+      .from<BlogPost>("blog_posts")
+      .select("*, blog_categories(name)")
+      .get();
     if (data) setPosts(data);
   };
 
@@ -95,9 +99,9 @@ export function BlogManager() {
     const { error } = selectedPost
       ? await supabase
           .from("blog_posts")
+          .where("id", selectedPost.id)
           .update(postData)
-          .eq("id", selectedPost.id)
-      : await supabase.from("blog_posts").insert([postData]);
+      : await supabase.from("blog_posts").insert(postData);
 
     if (error) {
       toast({
@@ -139,7 +143,10 @@ export function BlogManager() {
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("blog_posts").delete().eq("id", id);
+    const { error } = await supabase
+      .from("blog_posts")
+      .where("id", id)
+      .delete();
 
     if (error) {
       toast({
@@ -162,7 +169,7 @@ export function BlogManager() {
       const fileName = `${Date.now()}-${Math.random()}.${fileExt}`
       const filePath = `blog-images/${fileName}`
       
-      // Upload to Supabase storage
+      // Upload to storage
       const { data, error } = await supabase.storage
         .from('blog-images')
         .upload(filePath, file)

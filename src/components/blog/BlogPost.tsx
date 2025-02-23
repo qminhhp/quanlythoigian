@@ -19,6 +19,7 @@ interface BlogPost {
   meta_keywords: string;
   og_image: string;
   canonical_url: string;
+  category_id: string;
 }
 
 export function BlogPost() {
@@ -31,25 +32,28 @@ export function BlogPost() {
     const loadPost = async () => {
       // Load main post
       const { data } = await supabase
-        .from("blog_posts")
-        .select("*")
-        .eq("slug", slug)
-        .eq("language", language)
-        .eq("status", "published")
-        .single();
+        .from<BlogPost>("blog_posts")
+        .where("slug", slug)
+        .where("language", language)
+        .where("status", "published")
+        .first();
 
       if (data) {
         setPost(data);
 
         // Load related posts
-        const { data: relatedData } = await supabase
-          .from("blog_posts")
+        const query = supabase
+          .from<RelatedPost>("blog_posts")
           .select("slug, title")
-          .eq("language", language)
-          .eq("status", "published")
-          .eq("category_id", data.category_id)
-          .neq("id", data.id)
-          .limit(3);
+          .where("language", language)
+          .where("status", "published")
+          .where("category_id", data.category_id);
+
+        // Add NOT EQUAL condition for id
+        const { data: relatedData } = await query
+          .where("id", "!=", data.id)
+          .limit(3)
+          .get();
 
         if (relatedData) {
           setRelatedPosts(relatedData);

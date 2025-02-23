@@ -33,31 +33,25 @@ export function CommentSection({ postId }: CommentSectionProps) {
     loadComments();
 
     // Subscribe to changes
-    const subscription = supabase
-      .channel(`comments-${postId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "blog_comments",
-          filter: `post_id=eq.${postId}`,
-        },
-        loadComments,
-      )
-      .subscribe();
+    const channel = supabase.channel(`comments-${postId}`);
+    channel.subscribe((payload) => {
+      if (payload.new?.post_id === postId) {
+        loadComments();
+      }
+    });
 
     return () => {
-      subscription.unsubscribe();
+      channel.unsubscribe();
     };
   }, [postId]);
 
   const loadComments = async () => {
     const { data } = await supabase
-      .from("blog_comments")
+      .from<Comment>("blog_comments")
       .select("*, profiles(display_name)")
-      .eq("post_id", postId)
-      .order("created_at", { ascending: true });
+      .where("post_id", postId)
+      .orderBy("created_at", true)
+      .get();
 
     if (data) setComments(data);
   };
@@ -89,8 +83,8 @@ export function CommentSection({ postId }: CommentSectionProps) {
 
     const { error } = await supabase
       .from("blog_comments")
-      .update({ content: editContent.trim() })
-      .eq("id", commentId);
+      .where("id", commentId)
+      .update({ content: editContent.trim() });
 
     if (error) {
       toast({
@@ -108,8 +102,8 @@ export function CommentSection({ postId }: CommentSectionProps) {
   const handleDelete = async (commentId: string) => {
     const { error } = await supabase
       .from("blog_comments")
-      .delete()
-      .eq("id", commentId);
+      .where("id", commentId)
+      .delete();
 
     if (error) {
       toast({
