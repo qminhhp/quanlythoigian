@@ -203,7 +203,7 @@ export function AuthForm() {
                             {...field}
                             country="vn"
                             enableSearch
-                            inputClass={`!w-full !h-10 !text-base !px-4 !py-2 !border-input !bg-background ${error ? "!border-red-500" : ""}`}
+                            inputClass={`!w-full !h-10 !text-base !pl-12 !pr-4 !py-2 !border-input !bg-background ${error ? "!border-red-500" : ""}`}
                             buttonClass="!border-input !bg-background"
                             containerClass="!w-full"
                             searchClass="!w-full"
